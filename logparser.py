@@ -6,7 +6,9 @@
 """
 
 import os
+import re
 import paramiko
+
 from ftplib import FTP
 
 class ScumFtpLogparser:
@@ -87,7 +89,7 @@ class ScumSFTPLogParser:
 
         self.connect_p = paramiko.SSHClient()
         self.connect_p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        self.connect_p.connect(self.sftp_server, port=self.sftp_port, 
+        self.connect_p.connect(self.sftp_server, port=self.sftp_port,
                                username=self.sftp_user, password=self.sftp_password)
 
         self.sftp_client = self.connect_p.open_sftp()
@@ -95,4 +97,20 @@ class ScumSFTPLogParser:
     def _retrieve_file(self):
         pass
 
-    
+class parser:
+    log_regex: str
+
+    def parse(self, string) -> dict:
+        return re.match(self.log_regex, string)
+        pass
+
+class login_parser(parser):
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.log_regex = "^([0-9.-]*):\s'([0-9.]*)\s([0-9]*):([0-9A-Za-z]*)(.*)'\slogged\sin\sat:\sX=([0-9\-.]*)\sY=([0-9\-.]*)\sZ=([0-9\-.]*)"
+
+    def parse(self, string) -> dict:
+        result = super().parse(string).groupdict()
+
+        return result
