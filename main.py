@@ -24,6 +24,7 @@ FTP_SERVER = os.getenv("SCUM_FTP_SERVER")
 FTP_USER = os.getenv("SCUM_FTP_USER")
 FTP_PASSWORD = os.getenv("SCUM_FTP_PASSWORD")
 KILL_FEED_CHANNEL = os.getenv("SCUM_KILL_FEED_CHANNEL")
+ADMIN_LOG = os.getenv("SCUM_ADMIN_LOG")
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -43,7 +44,7 @@ async def on_ready():
         f'{guild.name}(id: {guild.id})\n'
         f'Starting log parser.'
     )
-    lp = scum_logparser(FTP_SERVER, FTP_USER, FTP_PASSWORD, "test.txt")
+    lp = scum_logparser(FTP_SERVER, FTP_USER, FTP_PASSWORD, ADMIN_LOG)
     log_parser_killfeed.start()
 
 @tasks.loop(seconds=10.0)
