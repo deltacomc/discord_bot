@@ -2,10 +2,11 @@
     @Author: Thorsten liepert <thorsten@liepert.dev>
     @Date: 06.09.2024
     @CLicense: MIT
-    @Description: 
+    @Description:
 """
 
 import os
+import paramiko
 from ftplib import FTP
 
 class ScumFtpLogparser:
@@ -59,3 +60,39 @@ class ScumFtpLogparser:
         self.current_log = []
 
         return ret_val
+
+class ScumSFTPLogParser:
+    """Class representing a a log parser"""
+    sftp_server = ""
+    sftp_user = ""
+    sftp_password = ""
+    sftp_port = 22
+    connect_p = None
+    current_log = []
+    current_timestamp = 0
+    logfile = "test.txt"
+
+    debug_message = None
+
+    def __init__(self, server, user, passwd, logfile, debug_callback=None) -> None:
+        self.sftp_server = server
+        self.sftp_user = user
+        self.sftp_password = passwd
+
+        if debug_callback is not None:
+            self.debug_message = debug_callback
+
+        if self.debug_message is not None:
+            self.debug_message(f"Try to conect to SFTP-Server.....")
+
+        self.connect_p = paramiko.SSHClient()
+        self.connect_p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self.connect_p.connect(self.sftp_server, port=self.sftp_port, 
+                               username=self.sftp_user, password=self.sftp_password)
+
+        self.sftp_client = self.connect_p.open_sftp()
+
+    def _retrieve_file(self):
+        pass
+
+    
