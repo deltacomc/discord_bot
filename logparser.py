@@ -21,7 +21,6 @@ class scum_logparser:
         self.ftp_password = passwd
         self.logfile = logfile
         self.connect_p = FTP(server,user=user,passwd=passwd)
-        
 
     def _scum_log_parser_load_timestamp(self):
         with open("scum_log_parser_ts.txt", "r") as _fp:
