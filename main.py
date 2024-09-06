@@ -1,9 +1,10 @@
 #! /usr/bin/env python3
-#####################
-# Discord Bot Test
-# 
-#
-#####################
+"""
+    @Author: Thorsten liepert <thorsten@liepert.dev>
+    @Date: 06.09.2024
+    @CLicense: MIT
+    @Description: 
+"""
 import os
 import sys
 import random
@@ -14,7 +15,7 @@ from discord.ext import tasks
 from dotenv import load_dotenv
 
 sys.path.append('./')
-from logparser import scum_logparser
+from logparser import ScumFtpLogparser
 
 load_dotenv()
 
@@ -34,7 +35,6 @@ lp = None
 
 @client.event
 async def on_ready():
-    global lp
     for guild in client.guilds:
         if guild.name == GUILD:
             break
@@ -44,12 +44,11 @@ async def on_ready():
         f'{guild.name}(id: {guild.id})\n'
         f'Starting log parser.'
     )
-    lp = scum_logparser(FTP_SERVER, FTP_USER, FTP_PASSWORD, ADMIN_LOG)
+    lp = ScumFtpLogparser(FTP_SERVER, FTP_USER, FTP_PASSWORD, ADMIN_LOG)
     log_parser_killfeed.start()
 
 @tasks.loop(seconds=10.0)
 async def log_parser_killfeed():
-    global lp
     await client.wait_until_ready()
     msgs = lp.scum_log_parse()
     channel = client.get_channel(int(KILL_FEED_CHANNEL))

@@ -1,13 +1,15 @@
-########################
-#
-#
-#
-########################
+"""
+    @Author: Thorsten liepert <thorsten@liepert.dev>
+    @Date: 06.09.2024
+    @CLicense: MIT
+    @Description: 
+"""
 
 import os
 from ftplib import FTP
 
-class scum_logparser:
+class ScumFtpLogparser:
+    """Class representing a a log parser"""
     ftp_server = ""
     ftp_user = ""
     ftp_password = ""
@@ -38,12 +40,13 @@ class scum_logparser:
 
     def _scum_log_parser_retrive(self):
         self.connect_p.login(user=self.ftp_user, passwd=self.ftp_password)
-        self.connect_p.retrlines(f"RETR {self.logfile}", callback=self._scum_logparser_getline)
+        self.connect_p.retrlines(f"RETR {self.logfile}", callback=self._scum_ftp_logparser_getline)
 
-    def _scum_logparser_getline(self, string: str):
+    def _scum_ftp_logparser_getline(self, string: str):
         self.current_log.append(string)
 
     def scum_log_parse(self) -> str:
+        """parse log"""
         ret_val = []
         self._scum_log_parser_retrive()
         if self.current_timestamp < len(self.current_log):
