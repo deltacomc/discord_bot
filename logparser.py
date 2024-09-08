@@ -7,9 +7,12 @@
 
 import os
 import re
+import stat
+from datetime import datetime
+from ftplib import FTP
+
 import paramiko
 
-from ftplib import FTP
 
 class ScumFtpLogparser:
     """Class representing a a log parser"""
@@ -72,43 +75,55 @@ class ScumSFTPLogParser:
     connect_p = None
     current_log = []
     current_timestamp = 0
-    logfile = "test.txt"
+    logdirectory = "/"
+    last_fetch_time = 0
+    file_groups = {}
 
     debug_message = None
 
-    def __init__(self, server, user, passwd, logfile, debug_callback=None) -> None:
+    def __init__(self, server, user, passwd, logdirectoy, debug_callback=None) -> None:
         self.sftp_server = server
         self.sftp_user = user
         self.sftp_password = passwd
+        self.logdirectory = logdirectoy
 
         if debug_callback is not None:
             self.debug_message = debug_callback
 
         if self.debug_message is not None:
-            self.debug_message(f"Try to conect to SFTP-Server.....")
+            self.debug_message("Try to conect to SFTP-Server.....")
 
         self.connect_p = paramiko.SSHClient()
         self.connect_p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.connect_p.connect(self.sftp_server, port=self.sftp_port,
                                username=self.sftp_user, password=self.sftp_password)
 
-        self.sftp_client = self.connect_p.open_sftp()
+        self.self.connect_p = self.connect_p.open_sftp()
 
-    def _retrieve_file(self):
-        pass
+    def _retrieve_files(self):
+        for entry in self.connect_p.listdir_attr(self.logdirectory):
+            entry_path = f"{self.logdirectory}/{entry.filename}"
+            if not stat.S_ISDIR(entry.st_mode):
+                if entry.filename.endswith(".log") and \
+                   datetime.fromtimestamp(entry.st_mtime) > self.last_fetch_time:
+                    base_name = re.match(r'(.+?)_(\d{14})\.log$', entry.filename)
+                    if base_name:
+                        base_name = base_name.group(1)
+                        if base_name not in self.file_groups or \
+                           entry.st_mtime > self.file_groups[base_name][1]:
+                            self.file_groups.update({base_name:  [entry_path, entry.st_mtime]})
 
 class parser:
     log_regex: str
 
     def parse(self, string) -> dict:
         return re.match(self.log_regex, string)
-        pass
 
 class login_parser(parser):
 
     def __init__(self) -> None:
         super().__init__()
-        self.log_regex = "^([0-9.-]*):\s'([0-9.]*)\s([0-9]*):([0-9A-Za-z]*)(.*)'\slogged\sin\sat:\sX=([0-9\-.]*)\sY=([0-9\-.]*)\sZ=([0-9\-.]*)"
+        self.log_regex = r"^([0-9.-]*):\s'([0-9.]*)\s([0-9]*):([0-9A-Za-z]*)(.*)'\slogged\sin\sat:\sX=([0-9\-.]*)\sY=([0-9\-.]*)\sZ=([0-9\-.]*)"
 
     def parse(self, string) -> dict:
         result = super().parse(string).groupdict()
