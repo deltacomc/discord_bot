@@ -15,7 +15,7 @@ from discord.ext import tasks
 from dotenv import load_dotenv
 
 sys.path.append('./')
-from logparser import ScumSFTPLogParser
+from logparser import ScumSFTPLogParser, login_parser
 
 load_dotenv()
 
@@ -37,6 +37,7 @@ lp: None
 
 @client.event
 async def on_ready():
+    global lp
     for guild in client.guilds:
         if guild.name == GUILD:
             break
@@ -46,7 +47,8 @@ async def on_ready():
         f'{guild.name}(id: {guild.id})\n'
         f'Starting log parser.'
     )
-    lp = ScumSFTPLogParser(SFTP_SERVER, SFTP_PASSWORD, SFTP_USER, SFTP_PASSWORD, LOG_DIRECTORY, send_debug_message)
+    lp = ScumSFTPLogParser(server=SFTP_SERVER, port=SFTP_PORT, passwd=SFTP_PASSWORD, 
+                           user=SFTP_USER, logdirectoy=LOG_DIRECTORY, debug_callback=None)
     log_parser_killfeed.start()
 
 async def send_debug_message(message):
@@ -55,12 +57,20 @@ async def send_debug_message(message):
 
 @tasks.loop(seconds=10.0)
 async def log_parser_killfeed():
+    global lp
     await client.wait_until_ready()
     msgs = lp.scum_log_parse()
     channel = client.get_channel(int(KILL_FEED_CHANNEL))
     if len(msgs) > 0:
-        for msg in msgs:
-            await channel.send(msg)
+        for file_key in msgs:
+            if "login" in file_key:
+                p = login_parser()
+                for m in msgs[file_key]:
+                    if type(m) is not set:
+                        for mm in str.split(m,"\n"):
+                            msg = p.parse(mm)
+                            if msg != {}:
+                                await channel.send(f"User: {msg["username"]}, logged {msg["state"]} @ X={msg["coordinates"]["x"]},X={msg["coordinates"]["y"]},X={msg["coordinates"]["z"]}")
 
 @client.command(name='99')
 async def nine_nine(ctx):

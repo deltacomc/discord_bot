@@ -11,6 +11,9 @@ import stat
 from datetime import datetime
 from ftplib import FTP
 
+import asyncio
+import threading
+
 import hashlib
 import chardet
 import paramiko
@@ -85,6 +88,8 @@ class ScumSFTPLogParser:
     new_log_data = {}
     sent_entries :set
     debug_message = None
+    _loop: None
+    _thr: None
 
     # Dateipfade zum Speichern des Zeitstempels des letzten Abrufs und der Hashes der gesendeten Logdateien
     LAST_FETCH_FILE = 'last_fetch_time.txt'
@@ -100,19 +105,32 @@ class ScumSFTPLogParser:
 
         if debug_callback is not None:
             self.debug_message = debug_callback
+        else:
+            self.debug_message = self._debug_to_stdout
 
+        self.last_fetch_time = self.get_last_fetch_time()
+        self.log_hashes = self.get_existing_log_hashes()
+        self.sent_entries = self.get_sent_entries()
+
+        self._open_connection()
+
+    def _open_connection(self):
         if self.debug_message is not None:
             self.debug_message("Try to conect to SFTP-Server.....")
 
         self.connect_p = paramiko.SSHClient()
         self.connect_p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.connect_p.connect(hostname=self.sftp_server, port=self.sftp_port,
-                               username=self.sftp_user, password=self.sftp_password)
+                               username=self.sftp_user, password=self.sftp_password,
+                               allow_agent=False,look_for_keys=False)
 
         self.connect_sftp_p = self.connect_p.open_sftp()
 
+
     def _retrieve_files(self):
-        for entry in self.connect_p.listdir_attr(self.logdirectory):
+        if self.connect_sftp_p is None:
+            self._open_connection()
+        for entry in self.connect_sftp_p.listdir_attr(self.logdirectory):
             entry_path = f"{self.logdirectory}/{entry.filename}"
             if not stat.S_ISDIR(entry.st_mode):
                 if entry.filename.endswith(".log") and \
@@ -125,12 +143,10 @@ class ScumSFTPLogParser:
                             self.file_groups.update({base_name:  [entry_path, entry.st_mtime]})
 
     def _retrive_file_content(self):
-        self.log_hashes = self.get_existing_log_hashes()
-        self.sent_entries = self.get_sent_entries()
         self.new_log_data = {}
 
         for base_name, (latest_file, _) in self.file_groups.items():
-            with self.connect_p.open(latest_file) as file:
+            with self.connect_sftp_p.open(latest_file) as file:
                 raw_content = file.read()
                 result = chardet.detect(raw_content)
                 encoding = result['encoding']
@@ -143,25 +159,34 @@ class ScumSFTPLogParser:
 
                 if filtered_content:
                     file_hash = self.generate_file_hash(filtered_content)
+
                     if file_hash not in self.log_hashes:
                         self.new_log_data.update({latest_file: [filtered_content, self.sent_entries]})
                         self.log_hashes.add(file_hash)
-                        self.debug_message(f"Neue Logdatei erkannt: {latest_file}")
+                        if self.debug_message is not None:
+                            self.debug_message(f"Neue Logdatei erkannt: {latest_file}")
+
         self.update_log_hashes(self.log_hashes)
 
         return self.new_log_data
+
+    def _call_async_callback(self, message):
+        if not self._thr.is_alive():
+            self._thr.start()
+        future = asyncio.run_coroutine_threadsafe(self.debug_message, self._loop)
+        return future.result()
 
     def filter_game_version(self, content):
         lines = content.splitlines()
         filtered_lines = [line for line in lines if "Game version:" not in line]
         return "\n".join(filtered_lines) if any(line.strip() for line in filtered_lines) else None
-    
+
     def generate_file_hash(self, content):
         return hashlib.sha256(content.encode('utf-8')).hexdigest()
 
     def hash_string(self, s):
         return hashlib.sha256(s.encode('utf-8')).hexdigest()
-    
+
     def get_last_fetch_time(self):
         if os.path.exists(self.LAST_FETCH_FILE):
             with open(self.LAST_FETCH_FILE, 'r', encoding='UTF-8') as f:
@@ -195,23 +220,41 @@ class ScumSFTPLogParser:
 
     def scum_log_parse(self) -> str:
         """parse log"""
-        self._retrieve_files
+        self._retrieve_files()
         return self._retrive_file_content()
 
+    def _debug_to_stdout(self, msg):
+        print(msg)
 
 class parser:
-    log_regex: str
+    log_regex = ""
+    log_pattern = None
 
     def parse(self, string) -> dict:
-        return re.match(self.log_regex, string)
+        return self.log_pattern.match(str.strip(string))
 
 class login_parser(parser):
 
     def __init__(self) -> None:
         super().__init__()
-        self.log_regex = r"^([0-9.-]*):\s'([0-9.]*)\s([0-9]*):([0-9A-Za-z]*)(.*)'\slogged\sin\sat:\sX=([0-9\-.]*)\sY=([0-9\-.]*)\sZ=([0-9\-.]*)"
+        self.log_regex = r"^([0-9.-]*):\s'([0-9.]*)\s([0-9]*):([0-9A-Za-z]*)\([0-9]\)'\slogged ([in|out]+)\sat:\sX=([0-9.-]*)\sY=([0-9.-]*)\sZ=([0-9.-]*)"
+        self.log_pattern = re.compile(self.log_regex)
+
 
     def parse(self, string) -> dict:
-        result = super().parse(string).groupdict()
-
-        return result
+        ret_val = {}
+        result = super().parse(string)
+        if result is not None:
+            ret_val = {
+                "timestamp" : result.group(1),
+                "ipaddress":  result.group(2),
+                "steamID" : result.group(3),
+                "username" : result.group(4),
+                "state" : result.group(5),
+                "coordinates" :{
+                    "x" : result.group(6),
+                    "y" : result.group(7), 
+                    "z" : result.group(8),
+                }
+            }
+        return ret_val
