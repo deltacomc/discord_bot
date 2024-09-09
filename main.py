@@ -15,23 +15,25 @@ from discord.ext import tasks
 from dotenv import load_dotenv
 
 sys.path.append('./')
-from logparser import ScumFtpLogparser
+from logparser import ScumSFTPLogParser
 
 load_dotenv()
 
 TOKEN = os.getenv("DISCORD_TOKEN")
 GUILD = os.getenv("DISCORD_GUILD")
-FTP_SERVER = os.getenv("SCUM_FTP_SERVER")
-FTP_USER = os.getenv("SCUM_FTP_USER")
-FTP_PASSWORD = os.getenv("SCUM_FTP_PASSWORD")
+SFTP_SERVER = os.getenv("SFTP_HOST")
+SFTP_PORT = os.getenv("SFTP_PORT")
+SFTP_USER = os.getenv("SFTP_USERNAME")
+SFTP_PASSWORD = os.getenv("SFTP_PASSWORD")
+
 KILL_FEED_CHANNEL = os.getenv("SCUM_KILL_FEED_CHANNEL")
-ADMIN_LOG = os.getenv("SCUM_ADMIN_LOG")
+LOG_DIRECTORY = os.getenv("LOG_DIRECTORY")
 
 intents = discord.Intents.default()
 intents.message_content = True
 
 client = commands.Bot(command_prefix="!",intents=intents)
-lp = None
+lp: None
 
 @client.event
 async def on_ready():
@@ -44,8 +46,12 @@ async def on_ready():
         f'{guild.name}(id: {guild.id})\n'
         f'Starting log parser.'
     )
-    lp = ScumFtpLogparser(FTP_SERVER, FTP_USER, FTP_PASSWORD, ADMIN_LOG)
+    lp = ScumSFTPLogParser(SFTP_SERVER, SFTP_PASSWORD, SFTP_USER, SFTP_PASSWORD, LOG_DIRECTORY, send_debug_message)
     log_parser_killfeed.start()
+
+async def send_debug_message(message):
+    channel = client.get_channel(int(KILL_FEED_CHANNEL))
+    await channel.send(message)
 
 @tasks.loop(seconds=10.0)
 async def log_parser_killfeed():

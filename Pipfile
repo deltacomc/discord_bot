@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-"pycord" = "*"
+"py-cord" = "*"
 "python-dotenv" = "*"
 "paramiko" = "*"
 
