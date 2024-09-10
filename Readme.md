@@ -2,6 +2,11 @@
 
 preliminary readme
 
+## Supported commands
+
+    * !online <user> - Returns if a user is online or not
+    * !lastseen <user> - Returns if a user is online or not and lasst seen time if offline
+
 ## configure env-file
 ```
 DISCORD_TOKEN = "<discord-token>"
