@@ -162,3 +162,5 @@ cython_debug/
 #.idea/
 *.txt
 logs/
+*.sqlite3
+*.sqlite3-journal
