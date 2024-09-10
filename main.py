@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 
 sys.path.append('./')
 from logparser import ScumSFTPLogParser, login_parser
+from datamanager import scumLogDataManager
 
 load_dotenv()
 
@@ -28,6 +29,7 @@ SFTP_PASSWORD = os.getenv("SFTP_PASSWORD")
 
 KILL_FEED_CHANNEL = os.getenv("SCUM_KILL_FEED_CHANNEL")
 LOG_DIRECTORY = os.getenv("LOG_DIRECTORY")
+DATABASE_FILE = os.getenv("DATABASE_FILE")
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -58,6 +60,7 @@ async def send_debug_message(message):
 @tasks.loop(seconds=10.0)
 async def log_parser_killfeed():
     global lp
+    db = scumLogDataManager(DATABASE_FILE)
     await client.wait_until_ready()
     msgs = lp.scum_log_parse()
     channel = client.get_channel(int(KILL_FEED_CHANNEL))
@@ -69,8 +72,9 @@ async def log_parser_killfeed():
                     if type(m) is not set:
                         for mm in str.split(m,"\n"):
                             msg = p.parse(mm)
-                            if msg != {}:
+                            if msg != {} and db.checkMessageSend(msg["hash"]):
                                 await channel.send(f"User: {msg["username"]}, logged {msg["state"]} @ X={msg["coordinates"]["x"]},X={msg["coordinates"]["y"]},X={msg["coordinates"]["z"]}")
+                                db.storeMessageSend(msg["hash"])
 
 @client.command(name='99')
 async def nine_nine(ctx):

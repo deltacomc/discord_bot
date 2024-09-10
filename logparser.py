@@ -233,6 +233,10 @@ class parser:
     def parse(self, string) -> dict:
         return self.log_pattern.match(str.strip(string))
 
+    def _hash_string(self, s):
+        return hashlib.sha256(s.encode('utf-8')).hexdigest()
+
+
 class login_parser(parser):
 
     def __init__(self) -> None:
@@ -244,7 +248,7 @@ class login_parser(parser):
     def parse(self, string) -> dict:
         ret_val = {}
         result = super().parse(string)
-        if result is not None:
+        if result is not None:            
             ret_val = {
                 "timestamp" : result.group(1),
                 "ipaddress":  result.group(2),
@@ -255,6 +259,7 @@ class login_parser(parser):
                     "x" : result.group(6),
                     "y" : result.group(7), 
                     "z" : result.group(8),
-                }
+                },
+                "hash":  self._hash_string(string)
             }
         return ret_val
