@@ -63,7 +63,7 @@ class scumLogDataManager:
             Return False if it is already stored in database"""
         cursor = self.db.cursor()
         cursor.execute(f"SELECT hash FROM message_send WHERE hash = '{messageHash}'")
-        
+
         if len(cursor.fetchall()) > 0:
             hashes = cursor.fetchall()
             for hash in hashes:
@@ -126,4 +126,30 @@ class scumLogDataManager:
             self.db.commit()
             return True
 
-
+    def getPlayerStatus(self, playerName) -> list:
+        ret_val = []
+        cursor = self.db.cursor()
+        cursor.execute(f"SELECT * FROM player WHERE username = '{playerName}'")
+        player_data = cursor.fetchall()
+        print(player_data)
+        if len(player_data) == 0:
+            ret_val = []
+        elif len(player_data) > 1:
+            print("more")
+            for p in player_data:
+                ret_val.append({p[3]: {
+                               "satus": p[4],
+                               "login_timestamp" : p[8],
+                               "logout_timestamp" : p[9]
+                               }})
+        else:
+            print("one")
+            ret_val.append({player_data[3]: {
+                           "satus": player_data[4],
+                           "login_timestamp" : player_data[8],
+                           "logout_timestamp" : player_data[9]
+                           }})
+            print(ret_val)
+            
+        print(ret_val)
+        return ret_val

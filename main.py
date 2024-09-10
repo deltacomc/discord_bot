@@ -27,7 +27,7 @@ SFTP_PORT = os.getenv("SFTP_PORT")
 SFTP_USER = os.getenv("SFTP_USERNAME")
 SFTP_PASSWORD = os.getenv("SFTP_PASSWORD")
 
-KILL_FEED_CHANNEL = os.getenv("SCUM_KILL_FEED_CHANNEL")
+LOG_FEED_CHANNEL = os.getenv("SCUM_LOG_FEED_CHANNEL")
 LOG_DIRECTORY = os.getenv("LOG_DIRECTORY")
 DATABASE_FILE = os.getenv("DATABASE_FILE")
 
@@ -51,19 +51,19 @@ async def on_ready():
     )
     lp = ScumSFTPLogParser(server=SFTP_SERVER, port=SFTP_PORT, passwd=SFTP_PASSWORD, 
                            user=SFTP_USER, logdirectoy=LOG_DIRECTORY, debug_callback=None)
-    log_parser_killfeed.start()
+    log_parser_loop.start()
 
 async def send_debug_message(message):
-    channel = client.get_channel(int(KILL_FEED_CHANNEL))
+    channel = client.get_channel(int(LOG_FEED_CHANNEL))
     await channel.send(message)
 
 @tasks.loop(seconds=10.0)
-async def log_parser_killfeed():
+async def log_parser_loop():
     global lp
     db = scumLogDataManager(DATABASE_FILE)
     await client.wait_until_ready()
     msgs = lp.scum_log_parse()
-    channel = client.get_channel(int(KILL_FEED_CHANNEL))
+    channel = client.get_channel(int(LOG_FEED_CHANNEL))
     if len(msgs) > 0:
         for file_key in msgs:
             if "login" in file_key:
@@ -76,6 +76,27 @@ async def log_parser_killfeed():
                                 await channel.send(f"User: {msg["username"]}, logged {msg["state"]} @ X={msg["coordinates"]["x"]},X={msg["coordinates"]["y"]},X={msg["coordinates"]["z"]}")
                                 db.storeMessageSend(msg["hash"])  
                                 db.updatePlayer(msg)
+
+@client.command(name='online')
+async def player_online(ctx, player: str):
+    global lp
+    message = ""
+    print(player)
+    db = scumLogDataManager(DATABASE_FILE)
+    player_status = db.getPlayerStatus(player)
+    print(player_status)
+    if len(player_status) == 0:
+        message = "Error: Player does not exists in Database"
+    else:
+        if len(player_status) > 1:
+            message = f"Multiple players with Name {player} found.\n"
+            for p in player_status:
+                message += f"{player} is currently {player_status[p]["satus"]}"
+        else:
+            message = f"Player: {player} is currently {player_status["player"]["status"]}."
+
+    await ctx.send(message)
+
 
 @client.command(name='99')
 async def nine_nine(ctx):

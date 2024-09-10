@@ -7,7 +7,7 @@ preliminary readme
 DISCORD_TOKEN = "<discord-token>"
 DISCORD_GUILD = "<server-name>"
 
-SCUM_KILL_FEED_CHANNEL = "<channel-id>"
+SCUM_LOG_FEED_CHANNEL = "<channel-id>"
 
 DATABASE_FILE = "/app/db.sqlite3"
 
