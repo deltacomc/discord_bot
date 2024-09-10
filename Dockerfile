@@ -10,6 +10,8 @@ RUN mkdir /app
 
 ADD requirements.txt /app
 ADD main.py /app
+ADD datamanager.py /app
+ADD logparser.py /app
 
 WORKDIR /app
 
