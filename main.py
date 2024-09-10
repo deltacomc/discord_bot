@@ -74,7 +74,8 @@ async def log_parser_killfeed():
                             msg = p.parse(mm)
                             if msg != {} and db.checkMessageSend(msg["hash"]):
                                 await channel.send(f"User: {msg["username"]}, logged {msg["state"]} @ X={msg["coordinates"]["x"]},X={msg["coordinates"]["y"]},X={msg["coordinates"]["z"]}")
-                                db.storeMessageSend(msg["hash"])
+                                db.storeMessageSend(msg["hash"])  
+                                db.updatePlayer(msg)
 
 @client.command(name='99')
 async def nine_nine(ctx):
