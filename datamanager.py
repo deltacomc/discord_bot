@@ -75,10 +75,11 @@ class scumLogDataManager:
     def updatePlayer(self, player):
         cursor = self.db.cursor()
         cursor.execute(f"SELECT * FROM player WHERE steamid = '{player["steamID"]}'")
-        if len(cursor.fetchall()) > 1:
+        player_data = cursor.fetchall()
+        if len(player_data) > 1:
             print("Multiple entries found with same steamID")
             return False
-        elif len(cursor.fetchall()) == 0:
+        elif len(player_data) == 0:
             print("No User with steamID in Database")
             if player["state"] == "in":
                 state = True
