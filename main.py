@@ -12,6 +12,7 @@ import random
 import traceback
 
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 import discord
 from discord.ext import commands
@@ -119,6 +120,7 @@ async def player_lastseen(ctx, player: str):
     """Function to check last seen of a player"""
     global lp
     message = ""
+    local_timezone = ZoneInfo('Europe/Berlin')
     print(f"Get status for player {player}")
     db = scumLogDataManager(DATABASE_FILE)
     player_status = db.getPlayerStatus(player)
@@ -131,7 +133,8 @@ async def player_lastseen(ctx, player: str):
             for p in player_status:
                 if p[player]["status"] == 0:
                     state = "offline"
-                    lasstseen = datetime.fromtimestamp(player_status[0][player]["logout_timestamp"]).strftime('%Y-%m-%d %H:%M:%S')
+                    lasstseen = datetime.fromtimestamp(player_status[0][player]["logout_timestamp"],
+                                                       local_timezone).strftime('%Y-%m-%d %H:%M:%S')
                 else:
                     state = "online"
                     lasstseen = "now"
@@ -139,14 +142,15 @@ async def player_lastseen(ctx, player: str):
         else:
             if player_status[0][player]["status"] == 0:
                 state = "offline"
-                lasstseen = datetime.fromtimestamp(player_status[0][player]["logout_timestamp"]).strftime('%Y-%m-%d %H:%M:%S')
+                lasstseen = datetime.fromtimestamp(player_status[0][player]["logout_timestamp"],
+                                                   local_timezone).strftime('%Y-%m-%d %H:%M:%S')
             else:
                 state = "online"
                 lasstseen = "now"
 
             message = f"Player: {player} is currently {state} and was last seen {lasstseen}."
 
-    await ctx.send(message)    
+    await ctx.send(message)
 
 @client.command(name='99')
 async def nine_nine(ctx):
@@ -204,7 +208,7 @@ async def on_command_error(ctx, error):
     if isinstance(error, commands.errors.CheckFailure):
         await ctx.send('You do not have the correct role for this command.')
     elif isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send(f"'{error.param.name}' is a required argument.")        
+        await ctx.send(f"'{error.param.name}' is a required argument.")
     else:
         # All unhandled errors will print their original traceback
         print(f'Ignoring exception in command {ctx.command}:', file=sys.stderr)
