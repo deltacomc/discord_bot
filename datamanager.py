@@ -131,25 +131,23 @@ class scumLogDataManager:
         cursor = self.db.cursor()
         cursor.execute(f"SELECT * FROM player WHERE username = '{playerName}'")
         player_data = cursor.fetchall()
-        print(player_data)
+
         if len(player_data) == 0:
             ret_val = []
         elif len(player_data) > 1:
-            print("more")
+            print("Found more than one Player with that name.")
             for p in player_data:
                 ret_val.append({p[3]: {
-                               "satus": p[4],
+                               "status": p[4],
                                "login_timestamp" : p[8],
                                "logout_timestamp" : p[9]
                                }})
         else:
-            print("one")
-            ret_val.append({player_data[3]: {
-                           "satus": player_data[4],
-                           "login_timestamp" : player_data[8],
-                           "logout_timestamp" : player_data[9]
-                           }})
-            print(ret_val)
-            
-        print(ret_val)
+            print("One Player found.")
+            ret_val.append({player_data[0][3]: {
+                "status": player_data[0][4],
+                "login_timestamp" : player_data[0][8],
+                "logout_timestamp" : player_data[0][9]
+                }})
+
         return ret_val
