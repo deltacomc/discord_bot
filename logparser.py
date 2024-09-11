@@ -8,6 +8,7 @@
 import os
 import re
 import stat
+import json
 from datetime import datetime
 from ftplib import FTP
 
@@ -270,4 +271,63 @@ class LoginParser(Parser):
                 },
                 "hash":  self._hash_string(string)
             }
+        return ret_val
+
+class KillParser(Parser):
+    """implementation of parser for the kill log file type"""
+
+    def __init__(self) -> None:
+        super().__init__()
+        # pylint: disable=line-too-long
+        self.log_regex = r"^([0-9.-]*):\s({.*)$"
+        self.log_pattern = re.compile(self.log_regex)
+        # pylint: enable=line-too-long
+
+    def parse(self, string) -> dict:
+        """implementation of the parser method for login log file type"""
+        ret_val = {}
+        result = super().parse(string)
+        if result is not None:
+            ret_val = {
+                "timestamp" : result.group(1),
+                "event": json.loads(result.group(2))
+            }
+
+        # Event Structure will be like
+        # {
+        #     "Killer": {
+        #         "ServerLocation": {
+        #             "X": -793052.3125,
+        #             "Y": -278619.875,
+        #             "Z": 16720.08984375
+        #         },
+        #         "ClientLocation": {
+        #             "X": -793052.3125,
+        #             "Y": -278619.875,
+        #             "Z": 16720.08984375
+        #         },
+        #         "IsInGameEvent": false,
+        #         "ProfileName": "didiann",
+        #         "UserId": "76561197970306734",
+        #         "HasImmortality": false
+        #     },
+        #     "Victim": {
+        #         "ServerLocation": {
+        #             "X": -797193.5,
+        #             "Y": -278922.4375,
+        #             "Z": 16720.01953125
+        #         },
+        #         "ClientLocation": {
+        #             "X": -797191.5,
+        #             "Y": -278923.71875,
+        #             "Z": 16720.0703125
+        #         },
+        #         "IsInGameEvent": false,
+        #         "ProfileName": "Punisher",
+        #         "UserId": "76561197986649167"
+        #     },
+        #     "Weapon": "Compound_Bow_C [Projectile]",
+        #     "TimeOfDay": "19:58:06"
+        # }
+
         return ret_val

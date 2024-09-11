@@ -26,12 +26,28 @@ class ScumLogDataManager:
             schema_version = cursor.execute("SELECT schema_version FROM scum_schema WHERE name = 'schema'")
             if schema_version.fetchone() == SCHEMA_VERSION:
                 return True
+            elif schema_version.fetchone() < SCHEMA_VERSION:
+                self._update_schema()
+                return True
             else:
                 return False
         except sqlite3.Error as e:
             print(e)
             self._init_schema()
             return True
+
+    def _update_schema(self):
+        # Call init to create none existing tables
+        self._init_schema()
+        # Update existing tables
+        # check if new column exists that we want to add
+        # check_column = f"SELECT COUNT(*) AS CNTREC FROM "
+        # check_column += f"pragma_table_info('{tablename}') WHERE name='{column_name}'"
+        # cursor = self.db.cursor()
+        # cursor.execute(check_column)
+        # result = cursor.fetchon()
+        # if result == 0:
+        # update table
 
     def _init_schema(self):
         cursor = self.db.cursor()
@@ -43,12 +59,19 @@ class ScumLogDataManager:
         cursor.execute("CREATE TABLE IF NOT EXISTS message_send (hash TEXT PRIMARY KEY, timestamp REAL)")
 
         cursor.execute("CREATE TABLE IF NOT EXISTS scum_schema (name TEXT, schema_version INTEGER PRIMARY KEY)")
-        cursor.execute("INSERT INTO scum_schema (name, schema_version) VALUES ('schema', 100)")
+        cursor.execute(f"INSERT INTO scum_schema (name, schema_version) VALUES ('schema', {SCHEMA_VERSION})")
 
         self.db.commit()
 
     def _get_timestamp(self, string):
         return datetime.strptime(string, "%Y.%m.%d-%H.%M.%S").timestamp()
+
+    def _discard_old_values(self, table, age_secs):
+        age_timestamp = datetime.timestamp(datetime.now()) - age_secs
+        statement = f"DELETE FROM {table} where timestamp < {age_timestamp}"
+        cursor = self.db.cursor()
+        cursor.execute(statement)
+        self.db.commit()
 
     def store_message_send(self, message_hash):
         """store send message in database"""
@@ -156,5 +179,19 @@ class ScumLogDataManager:
                 }})
 
         return ret_val
+
+    def discard_aged_messages(self, age: int) -> None:
+        """discard old send messages from table
+           Parameters:
+            age: int in seconds
+        """
+        self._discard_old_values("message_send", age)
+
+    def discard_stale_players(self, age: int) -> None:
+        """discard old send messages from table
+           Parameters:
+            age: int in seconds
+        """
+        self._discard_old_values("player", age)
 
 # pylint: enable=line-too-long

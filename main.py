@@ -44,6 +44,10 @@ LOG_CHECK_INTERVAL = os.getenv("LOG_CHECK_INTERVAL")
 if LOG_CHECK_INTERVAL is None:
     LOG_CHECK_INTERVAL = 60.0
 
+WEAPON_LOOKUP = {
+    "Compound_Bow_C": "compund bow"
+}
+
 intents = discord.Intents.default()
 intents.message_content = True
 
@@ -91,28 +95,48 @@ async def handle_login(msgs, file, dbconnection):
                     dbconnection.update_player(msg)
                     # pylint: enable=line-too-long
 
+async def handle_kills(msgs, file, dbconnection):
+    """function to construct and send kill messages"""
+    channel = client.get_channel(int(LOG_FEED_CHANNEL))
+    player_insults = [
+        'bad boy',
+        'savage',
+        'bandit',
+        'hero',
+        'murder'
+    ]
+
+    player_insult = random.choice(player_insults)
+    p = LoginParser()
+    for m in msgs[file]:
+        if not isinstance(m,set):
+            for mm in str.split(m,"\n"):
+                msg = p.parse(mm)
+                if msg and dbconnection.check_message_send(msg["hash"]):
+                    if msg["event"]["Weapon"] in WEAPON_LOOKUP:
+                        weapon = WEAPON_LOOKUP[[msg["event"]["Weapon"]]]
+                    else:
+                        weapon = msg["event"]["Weapon"]
+                    msg_str = f"Player {msg["event"]["Killer"]["ProfileName"]} "
+                    msg_str += f"was a {player_insult} "
+                    msg_str += f"and killed {msg["event"]["Victim"]["ProfileName"]} "
+                    msg_str += f"with a {weapon}."
+
+                    await channel.send(msg_str)
+                    dbconnection.store_message_send(msg["hash"])
+
 @tasks.loop(seconds=LOG_CHECK_INTERVAL)
 async def log_parser_loop():
     """Loop to parse logfiles and handle outputs"""
     db = ScumLogDataManager(DATABASE_FILE)
     await client.wait_until_ready()
     msgs = lp.scum_log_parse()
-    # channel = client.get_channel(int(LOG_FEED_CHANNEL))
     if len(msgs) > 0:
         for file_key in msgs:
             if "login" in file_key:
                 await handle_login(msgs, file_key, db)
-                # pylint: disable=line-too-long
-                # p = LoginParser()
-                # for m in msgs[file_key]:
-                #     if type(m) is not set:
-                #         for mm in str.split(m,"\n"):
-                #             msg = p.parse(mm)
-                #             if msg != {} and db.check_message_send(msg["hash"]):
-                #                 await channel.send(f"User: {msg["username"]}, logged {msg["state"]} @ X={msg["coordinates"]["x"]},X={msg["coordinates"]["y"]},X={msg["coordinates"]["z"]}")
-                #                 db.store_message_send(msg["hash"])
-                #                 db.update_player(msg)
-                # pylint: enable=line-too-long
+            elif "kill" in file_key and "event" not in file_key:
+                await handle_kills(msgs, file_key, db)
 
 @client.command(name='online')
 async def player_online(ctx, player: str):
