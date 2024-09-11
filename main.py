@@ -103,7 +103,7 @@ async def handle_kills(msgs, file, dbconnection):
         'savage',
         'bandit',
         'hero',
-        'murder'
+        'murderer'
     ]
 
     player_insult = random.choice(player_insults)
