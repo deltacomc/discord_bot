@@ -2,7 +2,7 @@
     @Author: Thorsten liepert <thorsten@liepert.dev>
     @Date: 06.09.2024
     @CLicense: MIT
-    @Description:
+    @Description: Get logfiles from server and over parser for various log file types
 """
 
 import os
@@ -10,9 +10,6 @@ import re
 import stat
 from datetime import datetime
 from ftplib import FTP
-
-import asyncio
-import threading
 
 import hashlib
 import chardet
@@ -40,13 +37,13 @@ class ScumFtpLogparser:
 
     def _scum_log_parser_load_timestamp(self):
         if os.path.exists("scum_log_parser_ts.txt"):
-            with open("scum_log_parser_ts.txt", "r") as _fp:
+            with open("scum_log_parser_ts.txt", "r", encoding="utf-8") as _fp:
                 self.current_timestamp = int(_fp.read())
         else:
             self.current_timestamp = 0
 
     def _scum_log_parser_store_timestamp(self):
-        with open("scum_log_parser_ts.txt", "w") as _fp:
+        with open("scum_log_parser_ts.txt", "w", encoding="utf-8") as _fp:
             _fp.write(str(self.current_timestamp))
 
     def _scum_log_parser_retrive(self):
@@ -61,10 +58,11 @@ class ScumFtpLogparser:
         ret_val = []
         self._scum_log_parser_retrive()
         if self.current_timestamp < len(self.current_log):
-            for line in range(len(self.current_log)):
+            # pylint: disable=unused-variable
+            for count, line in enumerate(self.current_log):
                 if line >= self.current_timestamp:
                     ret_val.append(self.current_log[line])
-
+            # pylint: enable=unused-variable
             self.current_timestamp = len(self.current_log)
             self._scum_log_parser_store_timestamp()
         self.current_log = []
@@ -91,7 +89,8 @@ class ScumSFTPLogParser:
     _loop: None
     _thr: None
 
-    # Dateipfade zum Speichern des Zeitstempels des letzten Abrufs und der Hashes der gesendeten Logdateien
+    # Dateipfade zum Speichern des Zeitstempels des letzten
+    # Abrufs und der Hashes der gesendeten Logdateien
     LAST_FETCH_FILE = 'last_fetch_time.txt'
     LOG_HASHES_FILE = 'log_hashes.txt'
     SENT_ENTRIES_FILE = 'sent_entries.txt'
@@ -159,7 +158,7 @@ class ScumSFTPLogParser:
 
                 if filtered_content:
                     file_hash = self.generate_file_hash(filtered_content)
-
+        # pylint: disable=line-too-long
                     if file_hash not in self.log_hashes:
                         self.new_log_data.update({latest_file: [filtered_content, self.sent_entries]})
                         self.log_hashes.add(file_hash)
@@ -167,27 +166,26 @@ class ScumSFTPLogParser:
                             self.debug_message(f"Neue Logdatei erkannt: {latest_file}")
 
         self.update_log_hashes(self.log_hashes)
-
+        # pylint: enable=line-too-long
         return self.new_log_data
 
-    def _call_async_callback(self, message):
-        if not self._thr.is_alive():
-            self._thr.start()
-        future = asyncio.run_coroutine_threadsafe(self.debug_message, self._loop)
-        return future.result()
-
     def filter_game_version(self, content):
+        """Filter game version from log file"""
         lines = content.splitlines()
         filtered_lines = [line for line in lines if "Game version:" not in line]
         return "\n".join(filtered_lines) if any(line.strip() for line in filtered_lines) else None
 
     def generate_file_hash(self, content):
+        """Return sha256 hash of given content"""
         return hashlib.sha256(content.encode('utf-8')).hexdigest()
 
     def hash_string(self, s):
+        """return sha256 hash of gicen string"""
         return hashlib.sha256(s.encode('utf-8')).hexdigest()
 
     def get_last_fetch_time(self):
+        """retruns the timestamp of the last time
+        a file was from the server"""
         if os.path.exists(self.LAST_FETCH_FILE):
             with open(self.LAST_FETCH_FILE, 'r', encoding='UTF-8') as f:
                 timestamp = f.read().strip()
@@ -195,26 +193,31 @@ class ScumSFTPLogParser:
         return datetime.min
 
     def update_last_fetch_time(self):
+        """Updates the last fetched file"""
         with open(self.LAST_FETCH_FILE, 'w', encoding='UTF-8') as f:
             f.write(datetime.now().isoformat())
 
     def get_existing_log_hashes(self):
+        """loads hashes of already read files"""
         if os.path.exists(self.LOG_HASHES_FILE):
             with open(self.LOG_HASHES_FILE, 'r', encoding='UTF-8') as f:
                 return set(line.strip() for line in f)
         return set()
 
     def update_log_hashes(self,hashes):
+        """update has file of already read files"""
         with open(self.LOG_HASHES_FILE, 'w', encoding='UTF-8') as f:
             f.write('\n'.join(hashes))
 
     def get_sent_entries(self):
+        """load hashes of already sent messages (deprecated)"""
         if os.path.exists(self.SENT_ENTRIES_FILE):
             with open(self.SENT_ENTRIES_FILE, 'r', encoding='UTF-8') as f:
                 return set(line.strip() for line in f)
         return set()
 
     def update_sent_entries(self, entries):
+        """update hashes of already sent hashes (deprecated)"""
         with open(self.SENT_ENTRIES_FILE, 'w', encoding='UTF-8') as f:
             f.write('\n'.join(entries))
 
@@ -226,29 +229,34 @@ class ScumSFTPLogParser:
     def _debug_to_stdout(self, msg):
         print(msg)
 
-class parser:
+class Parser:
+    """Abstract class for log data parser"""
     log_regex = ""
     log_pattern = None
 
     def parse(self, string) -> dict:
+        """parse given string and return re-object"""
         return self.log_pattern.match(str.strip(string))
 
     def _hash_string(self, s):
         return hashlib.sha256(s.encode('utf-8')).hexdigest()
 
 
-class login_parser(parser):
+class LoginParser(Parser):
+    """implementation of parser for the login log file type"""
 
     def __init__(self) -> None:
         super().__init__()
+        # pylint: disable=line-too-long
         self.log_regex = r"^([0-9.-]*):\s'([0-9.]*)\s([0-9]*):([0-9A-Za-z]*)\([0-9]+\)'\slogged ([in|out]+)\sat:\sX=([0-9.-]*)\sY=([0-9.-]*)\sZ=([0-9.-]*)"
         self.log_pattern = re.compile(self.log_regex)
-
+        # pylint: enable=line-too-long
 
     def parse(self, string) -> dict:
+        """implementation of the parser method for login log file type"""
         ret_val = {}
         result = super().parse(string)
-        if result is not None:            
+        if result is not None:
             ret_val = {
                 "timestamp" : result.group(1),
                 "ipaddress":  result.group(2),
@@ -257,7 +265,7 @@ class login_parser(parser):
                 "state" : result.group(5),
                 "coordinates" :{
                     "x" : result.group(6),
-                    "y" : result.group(7), 
+                    "y" : result.group(7),
                     "z" : result.group(8),
                 },
                 "hash":  self._hash_string(string)

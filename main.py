@@ -22,7 +22,7 @@ from dotenv import load_dotenv
 
 # pylint: disable=wrong-import-position
 sys.path.append('./')
-from logparser import ScumSFTPLogParser, login_parser
+from logparser import ScumSFTPLogParser, LoginParser
 from datamanager import scumLogDataManager
 # pylint: enable=wrong-import-position
 
@@ -79,7 +79,7 @@ async def send_debug_message(message):
 async def handle_login(msgs, file, dbconnection):
     """parse messages from login log files"""
     channel = client.get_channel(int(LOG_FEED_CHANNEL))
-    p = login_parser()
+    p = LoginParser()
     for m in msgs[file]:
         if not isinstance(m,set):
             for mm in str.split(m,"\n"):
@@ -103,7 +103,7 @@ async def log_parser_loop():
             if "login" in file_key:
                 await handle_login(msgs, file_key, db)
                 # pylint: disable=line-too-long
-                # p = login_parser()
+                # p = LoginParser()
                 # for m in msgs[file_key]:
                 #     if type(m) is not set:
                 #         for mm in str.split(m,"\n"):
