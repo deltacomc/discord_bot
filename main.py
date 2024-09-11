@@ -65,6 +65,19 @@ async def send_debug_message(message):
     channel = client.get_channel(int(DEBUG_CHANNEL))
     await channel.send(message)
 
+async def handle_login(msgs, file, dbconnection):
+    channel = client.get_channel(int(LOG_FEED_CHANNEL))
+    p = login_parser()
+    for m in msgs[file]:
+        if type(m) is not set:
+            for mm in str.split(m,"\n"):
+                msg = p.parse(mm)
+                if msg != {} and dbconnection.checkMessageSend(msg["hash"]):
+                    await channel.send(f"User: {msg["username"]}, logged {msg["state"]} @ X={msg["coordinates"]["x"]},X={msg["coordinates"]["y"]},X={msg["coordinates"]["z"]}")
+                    dbconnection.storeMessageSend(msg["hash"])
+                    dbconnection.updatePlayer(msg)
+
+
 @tasks.loop(seconds=10.0)
 async def log_parser_loop():
     """Loop to parse logfiles and handle outputs"""
@@ -72,19 +85,20 @@ async def log_parser_loop():
     db = scumLogDataManager(DATABASE_FILE)
     await client.wait_until_ready()
     msgs = lp.scum_log_parse()
-    channel = client.get_channel(int(LOG_FEED_CHANNEL))
+    # channel = client.get_channel(int(LOG_FEED_CHANNEL))
     if len(msgs) > 0:
         for file_key in msgs:
             if "login" in file_key:
-                p = login_parser()
-                for m in msgs[file_key]:
-                    if type(m) is not set:
-                        for mm in str.split(m,"\n"):
-                            msg = p.parse(mm)
-                            if msg != {} and db.checkMessageSend(msg["hash"]):
-                                await channel.send(f"User: {msg["username"]}, logged {msg["state"]} @ X={msg["coordinates"]["x"]},X={msg["coordinates"]["y"]},X={msg["coordinates"]["z"]}")
-                                db.storeMessageSend(msg["hash"])
-                                db.updatePlayer(msg)
+                await handle_login(msgs, file_key, db)
+                # p = login_parser()
+                # for m in msgs[file_key]:
+                #     if type(m) is not set:
+                #         for mm in str.split(m,"\n"):
+                #             msg = p.parse(mm)
+                #             if msg != {} and db.checkMessageSend(msg["hash"]):
+                #                 await channel.send(f"User: {msg["username"]}, logged {msg["state"]} @ X={msg["coordinates"]["x"]},X={msg["coordinates"]["y"]},X={msg["coordinates"]["z"]}")
+                #                 db.storeMessageSend(msg["hash"])
+                #                 db.updatePlayer(msg)
 
 @client.command(name='online')
 async def player_online(ctx, player: str):
