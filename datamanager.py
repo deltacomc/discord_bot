@@ -24,9 +24,10 @@ class ScumLogDataManager:
         cursor = self.db.cursor()
         try:
             schema_version = cursor.execute("SELECT schema_version FROM scum_schema WHERE name = 'schema'")
-            if schema_version.fetchone() == SCHEMA_VERSION:
+            ver = schema_version.fetchone()
+            if ver[0] >= SCHEMA_VERSION:
                 return True
-            elif schema_version.fetchone() < SCHEMA_VERSION:
+            elif ver[0] < SCHEMA_VERSION:
                 self._update_schema()
                 return True
             else:
@@ -59,9 +60,22 @@ class ScumLogDataManager:
         cursor.execute("CREATE TABLE IF NOT EXISTS message_send (hash TEXT PRIMARY KEY, timestamp REAL)")
 
         cursor.execute("CREATE TABLE IF NOT EXISTS scum_schema (name TEXT, schema_version INTEGER PRIMARY KEY)")
-        cursor.execute(f"INSERT INTO scum_schema (name, schema_version) VALUES ('schema', {SCHEMA_VERSION})")
+
+        self._update_schema_version()
 
         self.db.commit()
+
+    def _update_schema_version(self):
+        print("Update Database Schema version.")
+        cursor = self.db.cursor()
+        check_column = "SELECT COUNT(*) AS CNTREC FROM "
+        check_column += "scum_schema WHERE name='schema'"
+        cursor.execute(check_column)
+        result = cursor.fetchone()
+        if result[0] == 0:
+            cursor.execute(f"INSERT INTO scum_schema (name, schema_version) VALUES ('schema', {SCHEMA_VERSION})")
+        else:
+            cursor.execute(f"UPDATE scum_schema SET schema_version={SCHEMA_VERSION} WHERE name = 'schema'")
 
     def _get_timestamp(self, string):
         return datetime.strptime(string, "%Y.%m.%d-%H.%M.%S").timestamp()
