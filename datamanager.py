@@ -90,8 +90,8 @@ class ScumLogDataManager:
     def store_message_send(self, message_hash):
         """store send message in database"""
         cursor = self.db.cursor()
-        cursor.execute("SELECT hash FROM message_send")
-        if cursor.rowcount > 0:
+        cursor.execute(f"SELECT hash FROM message_send WHERE hash = '{message_hash}'")
+        if len(cursor.fetchall()) > 0:
             print ("Hash already stored. Not updating database.")
         else:
             cursor.execute(f"INSERT INTO message_send (hash, timestamp) VALUES ('{message_hash}', {datetime.timestamp(datetime.now())})")
