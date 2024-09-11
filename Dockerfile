@@ -20,4 +20,4 @@ WORKDIR /app
 RUN python -m pip install -r requirements.txt 
 
 USER bot
-CMD ["python", "/app/main.py"]
+CMD ["python", "-u", "/app/main.py"]
