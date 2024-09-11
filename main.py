@@ -81,7 +81,7 @@ async def handle_login(msgs, file, dbconnection):
     channel = client.get_channel(int(LOG_FEED_CHANNEL))
     p = login_parser()
     for m in msgs[file]:
-        if isinstance(m) is not set:
+        if not isinstance(m,set):
             for mm in str.split(m,"\n"):
                 msg = p.parse(mm)
                 if msg and dbconnection.checkMessageSend(msg["hash"]):
