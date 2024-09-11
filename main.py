@@ -23,7 +23,7 @@ from dotenv import load_dotenv
 # pylint: disable=wrong-import-position
 sys.path.append('./')
 from logparser import ScumSFTPLogParser, LoginParser
-from datamanager import scumLogDataManager
+from datamanager import ScumLogDataManager
 # pylint: enable=wrong-import-position
 
 load_dotenv()
@@ -84,17 +84,17 @@ async def handle_login(msgs, file, dbconnection):
         if not isinstance(m,set):
             for mm in str.split(m,"\n"):
                 msg = p.parse(mm)
-                if msg and dbconnection.checkMessageSend(msg["hash"]):
+                if msg and dbconnection.check_message_send(msg["hash"]):
                     # pylint: disable=line-too-long
                     await channel.send(f"User: {msg["username"]}, logged {msg["state"]} @ X={msg["coordinates"]["x"]},X={msg["coordinates"]["y"]},X={msg["coordinates"]["z"]}")
-                    dbconnection.storeMessageSend(msg["hash"])
-                    dbconnection.updatePlayer(msg)
+                    dbconnection.store_message_send(msg["hash"])
+                    dbconnection.update_player(msg)
                     # pylint: enable=line-too-long
 
 @tasks.loop(seconds=LOG_CHECK_INTERVAL)
 async def log_parser_loop():
     """Loop to parse logfiles and handle outputs"""
-    db = scumLogDataManager(DATABASE_FILE)
+    db = ScumLogDataManager(DATABASE_FILE)
     await client.wait_until_ready()
     msgs = lp.scum_log_parse()
     # channel = client.get_channel(int(LOG_FEED_CHANNEL))
@@ -108,10 +108,10 @@ async def log_parser_loop():
                 #     if type(m) is not set:
                 #         for mm in str.split(m,"\n"):
                 #             msg = p.parse(mm)
-                #             if msg != {} and db.checkMessageSend(msg["hash"]):
+                #             if msg != {} and db.check_message_send(msg["hash"]):
                 #                 await channel.send(f"User: {msg["username"]}, logged {msg["state"]} @ X={msg["coordinates"]["x"]},X={msg["coordinates"]["y"]},X={msg["coordinates"]["z"]}")
-                #                 db.storeMessageSend(msg["hash"])
-                #                 db.updatePlayer(msg)
+                #                 db.store_message_send(msg["hash"])
+                #                 db.update_player(msg)
                 # pylint: enable=line-too-long
 
 @client.command(name='online')
@@ -119,8 +119,8 @@ async def player_online(ctx, player: str):
     """Command to check if player is online"""
     message = ""
     print(f"Get status for player {player}")
-    db = scumLogDataManager(DATABASE_FILE)
-    player_status = db.getPlayerStatus(player)
+    db = ScumLogDataManager(DATABASE_FILE)
+    player_status = db.get_player_status(player)
 
     if len(player_status) == 0:
         message = f"Error: Player {player} does not exists in Database"
@@ -148,8 +148,8 @@ async def player_lastseen(ctx, player: str):
     message = ""
     local_timezone = ZoneInfo('Europe/Berlin')
     print(f"Get status for player {player}")
-    db = scumLogDataManager(DATABASE_FILE)
-    player_status = db.getPlayerStatus(player)
+    db = ScumLogDataManager(DATABASE_FILE)
+    player_status = db.get_player_status(player)
 
     if len(player_status) == 0:
         message = f"Error: Player {player} does not exists in Database"
