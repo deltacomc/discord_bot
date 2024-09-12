@@ -127,14 +127,7 @@ class ScumSFTPLogParser:
 
             self.connect_sftp_p = self.connect_p.open_sftp()
         except paramiko.ssh_exception.SSHException as e:
-            if not self._retry:
-                # try agin if SSHException
-                self._open_connection()
-                self._retry = True
-            else:
-                # try agin if SSHException
-                self._retry = False
-
+            self.connect_p = None
 
     def _retrieve_files(self):
         if self.connect_sftp_p is None:
@@ -155,7 +148,7 @@ class ScumSFTPLogParser:
             # Something went wrong with the connection
             # Try to reopen and rety
             self._open_connection()
-            if not self._retry:
+            if not self._retry and self.connect_p is not None:
                 self._retry = True
                 self._retrieve_files()
             else:
@@ -196,7 +189,7 @@ class ScumSFTPLogParser:
             # Something went wrong with the connection
             # Try to reopen and rety
             self._open_connection()
-            if not self._retry:
+            if not self._retry and self.connect_p is not None:
                 self._retry = True
                 self._retrive_file_content()
             else:
