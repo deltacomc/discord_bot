@@ -90,7 +90,7 @@ async def handle_login(msgs, file, dbconnection):
                 msg = p.parse(mm)
                 if msg and dbconnection.check_message_send(msg["hash"]):
                     # pylint: disable=line-too-long
-                    await channel.send(f"Player: {msg['username']}, logged {msg['state']} @ X={msg['coordinates']['x']} Y={msg['coordinates']['y']} Z={msg['coordinates']'z']}")
+                    await channel.send(f"Player: {msg['username']}, logged {msg['state']} @ X={msg['coordinates']['x']} Y={msg['coordinates']['y']} Z={msg['coordinates']['z']}")
                     dbconnection.store_message_send(msg["hash"])
                     dbconnection.update_player(msg)
                     # pylint: enable=line-too-long
@@ -117,9 +117,9 @@ async def handle_kills(msgs, file, dbconnection):
                         weapon = WEAPON_LOOKUP[[msg["event"]["Weapon"]]]
                     else:
                         weapon = msg["event"]["Weapon"]
-                    msg_str = f"Player {msg["event"]["Killer"]["ProfileName"]} "
+                    msg_str = f"Player {msg['event']['Killer']['ProfileName']} "
                     msg_str += f"was a {player_insult} "
-                    msg_str += f"and killed {msg["event"]["Victim"]["ProfileName"]} "
+                    msg_str += f"and killed {msg['event']['Victim']['ProfileName']} "
                     msg_str += f"with a {weapon}."
 
                     await channel.send(msg_str)
@@ -156,7 +156,7 @@ async def player_online(ctx, player: str):
                     state = "offline"
                 else:
                     state = "online"
-                message += f"{player} is currently {p[player]["satus"]}"
+                message += f"{player} is currently {p[player]['status']}"
         else:
             if player_status[0][player]["status"] == 0:
                 state = "offline"

@@ -115,7 +115,7 @@ class ScumLogDataManager:
     def update_player(self, player):
         """update player data in database"""
         cursor = self.db.cursor()
-        cursor.execute(f"SELECT * FROM player WHERE steamid = '{player["steamID"]}'")
+        cursor.execute(f"SELECT * FROM player WHERE steamid = '{player['steamID']}'")
         player_data = cursor.fetchall()
         if len(player_data) > 1:
             print("Multiple entries found with same steamID")
@@ -124,17 +124,17 @@ class ScumLogDataManager:
             print("No User with steamID in Database")
             if player["state"] == "in":
                 state = True
-                loggedin_timestamp = self._get_timestamp(player["timestamp"])
+                loggedin_timestamp = self._get_timestamp(player['timestamp'])
                 loggedout_timestamp = 0
             else:
                 state = False
                 loggedin_timestamp = 0
-                loggedout_timestamp = self._get_timestamp(player["timestamp"])
+                loggedout_timestamp = self._get_timestamp(player['timestamp'])
 
             cursor.execute(f"INSERT INTO player (timestamp, steamid, username, loggedin, coordinates_x, \
                            coordinates_y, coordinates_z, login_timestamp, logout_timestamp) \
-                           VALUES ({self._get_timestamp(player["timestamp"])}, {player["steamID"]}, '{player["username"]}', \
-                           {state}, {player["coordinates"]["x"]}, {player["coordinates"]["y"]}, {player["coordinates"]["z"]}, \
+                           VALUES ({self._get_timestamp(player['timestamp'])}, {player['steamID']}, '{player['username']}', \
+                           {state}, {player['coordinates']['x']}, {player['coordinates']['y']}, {player['coordinates']['z']}, \
                            {loggedin_timestamp}, {loggedout_timestamp})")
             self.db.commit()
             return True
@@ -143,27 +143,27 @@ class ScumLogDataManager:
 
             if player["state"] == "in":
                 state = True
-                loggedin_timestamp = self._get_timestamp(player["timestamp"])
+                loggedin_timestamp = self._get_timestamp(player['timestamp'])
                 cursor.execute(f"UPDATE player SET  \
-                               timestamp = {self._get_timestamp(player["timestamp"])}, \
+                               timestamp = {self._get_timestamp(player['timestamp'])}, \
                                loggedin = {state}, \
-                               coordinates_x = {player["coordinates"]["x"]}, \
-                               coordinates_y = {player["coordinates"]["y"]}, \
-                               coordinates_z = {player["coordinates"]["z"]}, \
+                               coordinates_x = {player['coordinates']['x']}, \
+                               coordinates_y = {player['coordinates']['y']}, \
+                               coordinates_z = {player['coordinates']['z']}, \
                                login_timestamp = {loggedin_timestamp} \
-                               WHERE steamid == '{player["steamID"]}'")
+                               WHERE steamid == '{player['steamID']}'")
 
             else:
                 state = False
-                loggedout_timestamp = self._get_timestamp(player["timestamp"])
+                loggedout_timestamp = self._get_timestamp(player['timestamp'])
                 cursor.execute(f"UPDATE player SET  \
-                               timestamp = {self._get_timestamp(player["timestamp"])}, \
+                               timestamp = {self._get_timestamp(player['timestamp'])}, \
                                loggedin = {state}, \
-                               coordinates_x = {player["coordinates"]["x"]}, \
-                               coordinates_y = {player["coordinates"]["y"]}, \
-                               coordinates_z ={player["coordinates"]["z"]}, \
+                               coordinates_x = {player['coordinates']['x']}, \
+                               coordinates_y = {player['coordinates']['y']}, \
+                               coordinates_z ={player['coordinates']['z']}, \
                                logout_timestamp = {loggedout_timestamp} \
-                               WHERE steamid == '{player["steamID"]}'")
+                               WHERE steamid == '{player['steamID']}'")
             self.db.commit()
             return True
 
