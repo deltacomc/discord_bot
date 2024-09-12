@@ -90,7 +90,7 @@ async def handle_login(msgs, file, dbconnection):
                 msg = p.parse(mm)
                 if msg and dbconnection.check_message_send(msg["hash"]):
                     # pylint: disable=line-too-long
-                    await channel.send(f"User: {msg["username"]}, logged {msg["state"]} @ X={msg["coordinates"]["x"]},X={msg["coordinates"]["y"]},X={msg["coordinates"]["z"]}")
+                    await channel.send(f"User: {msg["username"]}, logged {msg["state"]} @ X={msg["coordinates"]["x"]} Y={msg["coordinates"]["y"]} Z={msg["coordinates"]["z"]}")
                     dbconnection.store_message_send(msg["hash"])
                     dbconnection.update_player(msg)
                     # pylint: enable=line-too-long
