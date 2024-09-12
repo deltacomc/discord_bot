@@ -15,6 +15,7 @@ from ftplib import FTP
 import hashlib
 import chardet
 import paramiko
+import paramiko.ssh_exception
 
 
 class ScumFtpLogparser:
@@ -87,8 +88,7 @@ class ScumSFTPLogParser:
     new_log_data = {}
     sent_entries :set
     debug_message = None
-    _loop: None
-    _thr: None
+    _retry : False
 
     # Dateipfade zum Speichern des Zeitstempels des letzten
     # Abrufs und der Hashes der gesendeten Logdateien
@@ -115,59 +115,93 @@ class ScumSFTPLogParser:
         self._open_connection()
 
     def _open_connection(self):
-        if self.debug_message is not None:
-            self.debug_message("Try to conect to SFTP-Server.....")
+        try:
+            if self.debug_message is not None:
+                self.debug_message("Try to conect to SFTP-Server.....")
 
-        self.connect_p = paramiko.SSHClient()
-        self.connect_p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        self.connect_p.connect(hostname=self.sftp_server, port=self.sftp_port,
-                               username=self.sftp_user, password=self.sftp_password,
-                               allow_agent=False,look_for_keys=False)
+            self.connect_p = paramiko.SSHClient()
+            self.connect_p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            self.connect_p.connect(hostname=self.sftp_server, port=self.sftp_port,
+                                   username=self.sftp_user, password=self.sftp_password,
+                                   allow_agent=False,look_for_keys=False)
 
-        self.connect_sftp_p = self.connect_p.open_sftp()
+            self.connect_sftp_p = self.connect_p.open_sftp()
+        except paramiko.ssh_exception.SSHException as e:
+            if not self._retry:
+                # try agin if SSHException
+                self._open_connection()
+                self._retry = True
+            else:
+                # try agin if SSHException
+                self._retry = False
 
 
     def _retrieve_files(self):
         if self.connect_sftp_p is None:
             self._open_connection()
-        for entry in self.connect_sftp_p.listdir_attr(self.logdirectory):
-            entry_path = f"{self.logdirectory}/{entry.filename}"
-            if not stat.S_ISDIR(entry.st_mode):
-                if entry.filename.endswith(".log") and \
-                   datetime.fromtimestamp(entry.st_mtime) > self.last_fetch_time:
-                    base_name = re.match(r'(.+?)_(\d{14})\.log$', entry.filename)
-                    if base_name:
-                        base_name = base_name.group(1)
-                        if base_name not in self.file_groups or \
-                           entry.st_mtime > self.file_groups[base_name][1]:
-                            self.file_groups.update({base_name:  [entry_path, entry.st_mtime]})
+        try:
+            for entry in self.connect_sftp_p.listdir_attr(self.logdirectory):
+                entry_path = f"{self.logdirectory}/{entry.filename}"
+                if not stat.S_ISDIR(entry.st_mode):
+                    if entry.filename.endswith(".log") and \
+                       datetime.fromtimestamp(entry.st_mtime) > self.last_fetch_time:
+                        base_name = re.match(r'(.+?)_(\d{14})\.log$', entry.filename)
+                        if base_name:
+                            base_name = base_name.group(1)
+                            if base_name not in self.file_groups or \
+                               entry.st_mtime > self.file_groups[base_name][1]:
+                                self.file_groups.update({base_name:  [entry_path, entry.st_mtime]})
+        except paramiko.ssh_exception.SSHException as e:
+            # Something went wrong with the connection
+            # Try to reopen and rety
+            self._open_connection()
+            if not self._retry:
+                self._retry = True
+                self._retrieve_files()
+            else:
+                # already tried once so we don't retry and continue
+                self._retry = False
 
     def _retrive_file_content(self):
+        if self.connect_sftp_p is None:
+            self._open_connection()
         self.new_log_data = {}
+        try:
 
-        for base_name, (latest_file, _) in self.file_groups.items():
-            with self.connect_sftp_p.open(latest_file) as file:
-                raw_content = file.read()
-                result = chardet.detect(raw_content)
-                encoding = result['encoding']
-                try:
-                    content = raw_content.decode(encoding)
-                except (UnicodeDecodeError, TypeError):
-                    content = raw_content.decode('utf-8', errors='replace')
 
-                filtered_content = self.filter_game_version(content)
+            for base_name, (latest_file, _) in self.file_groups.items():
+                with self.connect_sftp_p.open(latest_file) as file:
+                    raw_content = file.read()
+                    result = chardet.detect(raw_content)
+                    encoding = result['encoding']
+                    try:
+                        content = raw_content.decode(encoding)
+                    except (UnicodeDecodeError, TypeError):
+                        content = raw_content.decode('utf-8', errors='replace')
 
-                if filtered_content:
-                    file_hash = self.generate_file_hash(filtered_content)
-        # pylint: disable=line-too-long
-                    if file_hash not in self.log_hashes:
-                        self.new_log_data.update({latest_file: [filtered_content, self.sent_entries]})
-                        self.log_hashes.add(file_hash)
-                        if self.debug_message is not None:
-                            self.debug_message(f"Neue Logdatei erkannt: {latest_file}")
+                    filtered_content = self.filter_game_version(content)
 
-        self.update_log_hashes(self.log_hashes)
-        # pylint: enable=line-too-long
+                    if filtered_content:
+                        file_hash = self.generate_file_hash(filtered_content)
+            # pylint: disable=line-too-long
+                        if file_hash not in self.log_hashes:
+                            self.new_log_data.update({latest_file: [filtered_content, self.sent_entries]})
+                            self.log_hashes.add(file_hash)
+                            if self.debug_message is not None:
+                                self.debug_message(f"Neue Logdatei erkannt: {latest_file}")
+
+            self.update_log_hashes(self.log_hashes)
+            # pylint: enable=line-too-long
+        except paramiko.ssh_exception.SSHException as e:
+            # Something went wrong with the connection
+            # Try to reopen and rety
+            self._open_connection()
+            if not self._retry:
+                self._retry = True
+                self._retrive_file_content()
+            else:
+                # already tried once so we don't retry and continue
+                self._retry = False
         return self.new_log_data
 
     def filter_game_version(self, content):
