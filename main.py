@@ -40,9 +40,14 @@ LOG_FEED_CHANNEL = os.getenv("SCUM_LOG_FEED_CHANNEL")
 LOG_DIRECTORY = os.getenv("LOG_DIRECTORY")
 DATABASE_FILE = os.getenv("DATABASE_FILE")
 LOG_CHECK_INTERVAL = os.getenv("LOG_CHECK_INTERVAL")
+HELP_COMMAND = os.getenv("BOT_HELP_COMMAND")
+
 
 if LOG_CHECK_INTERVAL is None:
     LOG_CHECK_INTERVAL = 60.0
+
+if HELP_COMMAND is None:
+    HELP_COMMAND = "buffi"
 
 WEAPON_LOOKUP = {
     "Compound_Bow_C": "compund bow"
@@ -261,6 +266,35 @@ async def player_lastseen(ctx, player: str):
             message = f"Player: {player} is currently {state} and was last seen {lasstseen}."
 
     await ctx.send(message)
+
+@client.command(name=HELP_COMMAND)
+async def bot_help(ctx):
+    """Help command"""
+    msg_str = "My Name is Buffi Bot.\n"
+    msg_str += "You can call me with following commands:\n"
+
+    await ctx.send(msg_str)
+
+    msg_str = "!online <player name> - I will tell you if the"
+    msg_str += "player with <name> is online on the SCUM server\n"
+
+    await ctx.send(msg_str)
+
+    msg_str = "!lastseen <player name> - I will tell you when I have seen <playername>"
+    msg_str += "on the SCUM Server\n"
+
+    await ctx.send(msg_str)
+
+    msg_str = "!bunkers <bunker name> - I will tell you if the <bunker name> is active.\n"
+    msg_str += "But the <bunker name> is optional. Without I unveil the secret and give"
+    msg_str += " you all active bunkers."
+
+    await ctx.send(msg_str)
+
+    msg_str = "I will also report bunker openening, kills and players joig and disconnecting "
+    msg_str += "to the SCUM Server."
+
+    await ctx.send(msg_str)
 
 @client.command(name='99')
 async def nine_nine(ctx):

@@ -335,7 +335,8 @@ class KillParser(Parser):
         if result is not None:
             ret_val = {
                 "timestamp" : result.group(1),
-                "event": json.loads(result.group(2))
+                "event": json.loads(result.group(2)),
+                "hash": self._hash_string(string)
             }
 
         # Event Structure will be like
