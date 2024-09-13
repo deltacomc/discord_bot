@@ -6,6 +6,7 @@ preliminary readme
 
     * !online <user> - Returns if a user is online or not
     * !lastseen <user> - Returns if a user is online or not and lasst seen time if offline
+    * !bunkers <bunker> - Returns if bunker is active. <bunker> is optional.
 
 ## configure env-file
 ```
