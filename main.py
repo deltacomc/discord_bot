@@ -193,6 +193,8 @@ async def command_bunkers(ctx, bunker: str = None):
                 msg_str += f"@ Coordinates X={bunk['coordinates']['x']} "
                 msg_str += f"Y={bunk['coordinates']['y']} "
                 msg_str += f"Z={bunk['coordinates']['z']}\n"
+        else:
+            msg_str = "No active bunkers found."
 
     await ctx.send(msg_str)
 
