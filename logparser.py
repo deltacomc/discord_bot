@@ -143,7 +143,7 @@ class ScumSFTPLogParser:
             ret_val = False
         finally:
             return ret_val
-        
+
     def _retrieve_files(self):
         if self.connect_sftp_p is None or not self._check_connection_alive():
             self._open_connection()
@@ -311,7 +311,7 @@ class LoginParser(Parser):
                     "y" : result.group(7),
                     "z" : result.group(8),
                 },
-                "hash":  self._hash_string(string)
+                "hash": self._hash_string(string)
             }
         return ret_val
 
@@ -373,3 +373,136 @@ class KillParser(Parser):
         # }
 
         return ret_val
+
+class BunkerParser(Parser):
+    """implementation of parser for the kill log file type"""
+    # pylint: disable=line-too-long
+
+    bunkerRegex = {
+        # 2024.09.10-02.33.17: [LogBunkerLock] D2 Bunker is Active. Activated 00h 00m 00s ago. X=-243813.062 Y=568471.812 Z=72278.109
+        "Active" : r"^([0-9.-]*):\s\[[A-Za-z]+\]\s([A-Z]{1}[0-9]{1})[A-Za-z\s.]+([0-9]{2})h ([0-9]{2})m ([0-9]{2})s[A-Za-z\s.]+\sX=([0-9.-]*)\sY=([0-9.-]*)\sZ=([0-9.-]*)$",
+        # 2024.09.10-02.33.17: [LogBunkerLock] Z1 Bunker is Locked. Locked 00h 00m 00s ago, next Activation in 25h 47m 38s. X=-564608.062 Y=-724692.062 Z=15077.148
+        "Locked" : r"^([0-9.-]*):\s\[[A-Za-z]+\]\s([A-Z]{1}[0-9]{1})[A-Za-z\s.]+([0-9]{2})h ([0-9]{2})m ([0-9]{2})s[A-Za-z\s,.]+([0-9]{2})h ([0-9]{2})m ([0-9]{2})s.\sX=([0-9.-]*)\sY=([0-9.-]*)\sZ=([0-9.-]*)$",
+        # 2024.09.10-02.32.59: [LogBunkerLock] B3 Bunker Activated 17h 35m 35s ago
+        "Activated" : r"^([0-9.-]*):\s\[[A-Za-z]+\]\s([A-Z]{1}[0-9]{1})[A-Za-z\s.]+([0-9]{2})h ([0-9]{2})m ([0-9]{2})s[A-Za-z\s.]+$",
+        # 2024.09.10-04.20.55: [LogBunkerLock] D2 Bunker Deactivated
+        "Deactivated" : r"^([0-9.-]*):\s\[[A-Za-z\s]+\]\s([A-Z]{1}[0-9]{1})\s[A-Za-z\s]+$",
+    }
+
+    def __init__(self) -> None:
+        super().__init__()
+
+
+    def parse(self, string) -> dict:
+        """implementation of the parser method for login log file type"""
+        retval = {
+            "name": str,
+            "active": bool,
+            "timestamp": str,
+            "hash": str,
+            "since": {
+                "h": int,
+                "m": int,
+                "s": int,
+            },
+            "next": {
+                "h": int,
+                "m": int,
+                "s": int,
+            },
+            "coordinates": {
+                "x": float,
+                "y": float,
+                "z": float,
+            },
+        }
+        if "Active" in string:
+            self.log_regex = self.bunkerRegex["Active"]
+        elif "Locked" in string:
+            self.log_regex = self.bunkerRegex["Locked"]
+        elif "Activated" in string:
+            self.log_regex = self.bunkerRegex["Activated"]
+        elif "Deactivated" in string:
+            self.log_regex = self.bunkerRegex["Deactivated"]
+        else:
+            retval = {}
+
+        self.log_pattern = re.compile(self.log_regex)
+        result = super().parse(string)
+        if result:
+            if "Active" in string:
+                retval.update({
+                    "name": result.group(2),
+                    "active": True,
+                    "timestamp": result.group(1),
+                    "hash": self._hash_string(string),
+                    "since": {
+                        "h": result.group(3),
+                        "m": result.group(4),
+                        "s": result.group(5),
+                    },
+                    "next": {},
+                    "coordinates": {
+                        "x": result.group(6),
+                        "y": result.group(7),
+                        "z": result.group(8),
+                    }
+                }
+                )
+            elif "Locked" in string:
+                retval.update({
+                    "name": result.group(2),
+                    "active": False,
+                    "timestamp": result.group(1),
+                    "hash": self._hash_string(string),
+                    "since": {
+                        "h": result.group(3),
+                        "m": result.group(4),
+                        "s": result.group(5),
+                    },
+                    "next": {
+                        "h": result.group(6),
+                        "m": result.group(7),
+                        "s": result.group(8),
+                    },
+                    "coordinates": {
+                        "x": result.group(9),
+                        "y": result.group(10),
+                        "z": result.group(11),
+                    }
+                }
+                )
+            elif "Activated" in string:
+                retval.update({
+                    "name": result.group(2),
+                    "active": True,
+                    "timestamp": result.group(1),
+                    "hash": self._hash_string(string),
+                    "since": {
+                        "h": result.group(3),
+                        "m": result.group(4),
+                        "s": result.group(5),
+                    },
+                    "next": {},
+                    "coordinates": {}
+                }
+                )
+            elif "Deactivated" in string:
+                retval.update({
+                    "name": result.group(2),
+                    "active": False,
+                    "timestamp": result.group(1),
+                    "hash": self._hash_string(string),
+                    "since": {},
+                    "next": {},
+                    "coordinates": {}
+                }
+                )
+            else:
+                retval = {}
+        else:
+            retval = {}
+
+        return retval
+
+# pylint: enable=line-too-long

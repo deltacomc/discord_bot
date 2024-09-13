@@ -22,7 +22,7 @@ from dotenv import load_dotenv
 
 # pylint: disable=wrong-import-position
 sys.path.append('./')
-from logparser import ScumSFTPLogParser, LoginParser
+from logparser import ScumSFTPLogParser, LoginParser, KillParser, BunkerParser
 from datamanager import ScumLogDataManager
 # pylint: enable=wrong-import-position
 
@@ -107,7 +107,7 @@ async def handle_kills(msgs, file, dbconnection):
     ]
 
     player_insult = random.choice(player_insults)
-    p = LoginParser()
+    p = KillParser()
     for m in msgs[file]:
         if not isinstance(m,set):
             for mm in str.split(m,"\n"):
@@ -125,6 +125,28 @@ async def handle_kills(msgs, file, dbconnection):
                     await channel.send(msg_str)
                     dbconnection.store_message_send(msg["hash"])
 
+async def handle_bunkers(msgs, file, dbconnection):
+    channel = client.get_channel(int(LOG_FEED_CHANNEL))
+    p = BunkerParser()
+    for m in msgs[file]:
+        if not isinstance(m,set):
+            for mm in str.split(m,"\n"):
+                msg = p.parse(mm)
+                if msg and dbconnection.check_message_send(msg["hash"]):
+                    # Bunker activaed
+                    if msg["active"] and len(msg["since"]) > 0 and \
+                       len(msg["coordinates"]) > 0 and \
+                       len(msg["next"]) == 0:
+                        msg_str = (
+                            f"Bunker {msg["name"]} was activated. "
+                            f"Coordinates @ X={msg['coordinates']['x']} "
+                            f"Y={msg['coordinates']['y']} "
+                            f"Z={msg['coordinates']['z']}"
+                        )
+                        await channel.send(''.join(msg_str))
+                    dbconnection.update_bunker_status(msg)
+                    dbconnection.store_message_send(msg["hash"])
+
 @tasks.loop(seconds=LOG_CHECK_INTERVAL)
 async def log_parser_loop():
     """Loop to parse logfiles and handle outputs"""
@@ -137,6 +159,8 @@ async def log_parser_loop():
                 await handle_login(msgs, file_key, db)
             elif "kill" in file_key and "event" not in file_key:
                 await handle_kills(msgs, file_key, db)
+            elif "gameplay" in file_key:
+                await handle_bunkers(msgs, file_key, db)
 
 @client.command(name='online')
 async def player_online(ctx, player: str):
