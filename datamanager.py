@@ -87,7 +87,6 @@ class ScumLogDataManager:
     def _get_time_delta(self, string):
         s = string.split(sep=":")
         retval = int(s[0])*3600 + int(s[1])*60 + int(s[2])
-        print(retval)
         return retval
 
 
@@ -187,36 +186,36 @@ class ScumLogDataManager:
         if len(bunker_data) == 0:
             print("Bunker not in Database")
             if len(bunker["coordinates"]) != 0 and len(bunker["next"]) == 0 and bunker["active"]:
-                statement = f"INSERT INTO bunkers (name, timestamp, active, since, next,"
-                statement += f"coordinates_x, coordinates_y, coordinates_z) VALUES "
+                statement = "INSERT INTO bunkers (name, timestamp, active, since, next,"
+                statement += "coordinates_x, coordinates_y, coordinates_z) VALUES "
                 statement += f"('{bunker['name']}', {self._get_timestamp(bunker['timestamp'])}, {bunker['active']},"
                 statement += f"self._get_time_delta({bunker['since']['h']}:{bunker['since']['m']}:{bunker['since']['s']}),"
                 statement += "0,"
                 statement += f"{bunker['coordinates']['x']},{bunker['coordinates']['y']},{bunker['coordinates']['z']})"
             elif len(bunker["next"]) != 0 and not bunker["active"]:
-                statement = f"INSERT INTO bunkers (name, timestamp, active, since, next,"
-                statement += f"coordinates_x, coordinates_y, coordinates_z) VALUES "
+                statement = "INSERT INTO bunkers (name, timestamp, active, since, next,"
+                statement += "coordinates_x, coordinates_y, coordinates_z) VALUES "
                 statement += f"('{bunker['name']}', {self._get_timestamp(bunker['timestamp'])}, {bunker['active']},"
                 statement += f"{self._get_time_delta(bunker['since']['h']+':'+bunker['since']['m']+':'+bunker['since']['s'])},"
                 statement += f"{self._get_time_delta(bunker['next']['h']+':'+bunker['next']['m']+':'+bunker['next']['s'])},"
                 statement += f"{bunker['coordinates']['x']},{bunker['coordinates']['y']},{bunker['coordinates']['z']})"
             elif len(bunker["next"]) == 0 and len(bunker["coordinates"]) == 0 and bunker["active"]:
-                statement = f"INSERT INTO bunkers (name, timestamp, active, since, next,"
-                statement += f"coordinates_x, coordinates_y, coordinates_z) VALUES "
+                statement = "INSERT INTO bunkers (name, timestamp, active, since, next,"
+                statement += "coordinates_x, coordinates_y, coordinates_z) VALUES "
                 statement += f"('{bunker['name']}', {self._get_timestamp(bunker['timestamp'])}, {bunker['active']},"
                 statement += f"{self._get_time_delta(bunker['since']['h']+':'+bunker['since']['m']+':'+bunker['since']['s'])},"
                 statement += "0, 0, 0, 0)"
 
             elif len(bunker["next"]) == 0 and len(bunker["since"]) == 0 and not bunker["active"]:
-                statement = f"INSERT INTO bunkers (name, timestamp, active, since, next,"
-                statement += f"coordinates_x, coordinates_y, coordinates_z) VALUES "
+                statement = "INSERT INTO bunkers (name, timestamp, active, since, next,"
+                statement += "coordinates_x, coordinates_y, coordinates_z) VALUES "
                 statement += f"('{bunker['name']}', {self._get_timestamp(bunker['timestamp'])}, {bunker['active']},"
                 statement += "0, 0, 0, 0, 0)"
 
         elif len(bunker_data) == 1:
-            print(f"Bunker {bunker["name"]} in Database")
+            print(f"Bunker {bunker['name']} in Database")
             if len(bunker["coordinates"]) > 0 and len(bunker["next"]) == 0 and bunker["active"]: # Active
-                statement = f"UPDATE bunkers SET "
+                statement = "UPDATE bunkers SET "
                 statement += f"timestamp = {self._get_timestamp(bunker['timestamp'])},"
                 statement += f"active = {bunker['active']},"
                 statement += f"since = {self._get_time_delta(bunker['since']['h']+':'+bunker['since']['m']+':'+bunker['since']['s'])},"
@@ -225,7 +224,7 @@ class ScumLogDataManager:
                 statement += f"coordinates_z = {bunker['coordinates']['z']} "
                 statement += f"WHERE name = '{bunker['name']}'"
             elif len(bunker["next"]) != 0 and not bunker["active"]: # Locked
-                statement = f"UPDATE bunkers SET "
+                statement = "UPDATE bunkers SET "
                 statement += f"timestamp = {self._get_timestamp(bunker['timestamp'])},"
                 statement += f"active = {bunker['active']},"
                 statement += f"since = {self._get_time_delta(bunker['since']['h']+':'+bunker['since']['m']+':'+bunker['since']['s'])},"
@@ -235,20 +234,20 @@ class ScumLogDataManager:
                 statement += f"coordinates_z = {bunker['coordinates']['z']} "
                 statement += f"WHERE name = '{bunker['name']}'"
             elif len(bunker["next"]) == 0 and len(bunker["coordinates"]) == 0 and bunker["active"]: # Activated
-                statement = f"UPDATE bunkers SET "
+                statement = "UPDATE bunkers SET "
                 statement += f"timestamp = {self._get_timestamp(bunker['timestamp'])},"
                 statement += f"active = {bunker['active']},"
                 statement += f"since = {self._get_time_delta(bunker['since']['h']+':'+bunker['since']['m']+':'+bunker['since']['s'])} "
                 statement += f"WHERE name = '{bunker['name']}'"
             elif len(bunker["next"]) == 0 and len(bunker["since"]) == 0 and not bunker["active"]: # Deactivated
-                statement = f"UPDATE bunkers SET "
+                statement = "UPDATE bunkers SET "
                 statement += f"timestamp = {self._get_timestamp(bunker['timestamp'])},"
                 statement += f"active = {bunker['active']},"
-                statement += f"since = 0,"
-                statement += f"next = 0,"
-                statement += f"coordinates_x = 0,"
-                statement += f"coordinates_y = 0,"
-                statement += f"coordinates_z = 0 "
+                statement += "since = 0,"
+                statement += "next = 0,"
+                statement += "coordinates_x = 0,"
+                statement += "coordinates_y = 0,"
+                statement += "coordinates_z = 0 "
                 statement += f"WHERE name = '{bunker['name']}'"
         else:
             print(f"Not updateing database more than one bunker found with the same name {bunker['name']}")
@@ -283,6 +282,69 @@ class ScumLogDataManager:
                 }})
 
         return ret_val
+
+    def get_active_bunkers(self, bunker: str = None) -> list:
+        """Get all or for one specific bunker the active state"""
+        retval = []
+        cursor = self.db.cursor()
+
+        if bunker:
+            cursor.execute(f"SELECT * FROM bunkers WHERE name = '{bunker.upper()}'")
+            bunker_data = cursor.fetchall()
+            if len(bunker_data) == 0:
+                retval = []
+            elif len(bunker_data) > 1:
+                # 1, 1726252409, 'C1', 1, -393614.781, 216967.266, 59906.152, 0, 0
+                print("Found more than one Bunker with that name.")
+                for p in bunker_data:
+                    retval.append({
+                            "name": p[2],
+                            "timestamp": p[1],
+                            "active": p[3],
+                            "since" : p[7],
+                            "next" : p[8],
+                            "coordinates": {
+                                "x": p[4],
+                                "y": p[5],
+                                "z": p[6]
+                            }
+                            })
+            else:
+                print("One Bunker found.")
+                retval.append({
+                        "name": bunker_data[0][2],
+                        "timestamp": bunker_data[0][1],
+                        "active": bunker_data[0][3],
+                        "since" : bunker_data[0][7],
+                        "next" : bunker_data[0][8],
+                        "coordinates": {
+                            "x": bunker_data[0][4],
+                            "y": bunker_data[0][5],
+                            "z": bunker_data[0][6]
+                        }
+                    })
+        else:
+            cursor.execute("SELECT * FROM bunkers WHERE active = 1")
+            bunker_data = cursor.fetchall()
+            if len(bunker_data) == 0:
+                retval = []
+            elif len(bunker_data) > 1:
+                # 1, 1726252409, 'C1', 1, -393614.781, 216967.266, 59906.152, 0, 0
+                print("Got all Bunker Data")
+                for p in bunker_data:
+                    retval.append({
+                            "name": p[2],
+                            "timestamp": p[1],
+                            "active": p[3],
+                            "since" : p[7],
+                            "next" : p[8],
+                            "coordinates": {
+                                "x": p[4],
+                                "y": p[5],
+                                "z": p[6]
+                            }
+                            })
+        return retval
 
     def discard_aged_messages(self, age: int) -> None:
         """discard old send messages from table

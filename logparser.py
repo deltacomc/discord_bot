@@ -4,7 +4,7 @@
     @CLicense: MIT
     @Description: Get logfiles from server and over parser for various log file types
 """
-
+# pylint: disable=broad-exception-caught
 import os
 import re
 import stat
@@ -139,10 +139,11 @@ class ScumSFTPLogParser:
             transport = self.connect_p.get_transport()
             transport.send_ignore()
         except EOFError as e:
+            print(e)
             self.connect_p.close()
             ret_val = False
-        finally:
-            return ret_val
+
+        return ret_val
 
     def _retrieve_files(self):
         if self.connect_sftp_p is None or not self._check_connection_alive():
@@ -162,6 +163,7 @@ class ScumSFTPLogParser:
         except paramiko.ssh_exception.SSHException as e:
             # Something went wrong with the connection
             # Try to reopen and rety
+            print(e)
             self._open_connection()
             if not self._retry and self.connect_p is not None:
                 self._retry = True
@@ -176,8 +178,9 @@ class ScumSFTPLogParser:
         self.new_log_data = {}
         try:
 
-
+            # pylint: disable=unused-variable
             for base_name, (latest_file, _) in self.file_groups.items():
+            # pylint: enable=unused-variable
                 with self.connect_sftp_p.open(latest_file) as file:
                     raw_content = file.read()
                     result = chardet.detect(raw_content)
@@ -289,7 +292,7 @@ class LoginParser(Parser):
     """implementation of parser for the login log file type"""
 
     def __init__(self) -> None:
-        super().__init__()
+        # super().__init__()
         # pylint: disable=line-too-long
         self.log_regex = r"^([0-9.-]*):\s'([0-9.]*)\s([0-9]*):([0-9A-Za-z]*)\([0-9]+\)'\slogged ([in|out]+)\sat:\sX=([0-9.-]*)\sY=([0-9.-]*)\sZ=([0-9.-]*)"
         self.log_pattern = re.compile(self.log_regex)
@@ -319,7 +322,7 @@ class KillParser(Parser):
     """implementation of parser for the kill log file type"""
 
     def __init__(self) -> None:
-        super().__init__()
+        # super().__init__()
         # pylint: disable=line-too-long
         self.log_regex = r"^([0-9.-]*):\s({.*)$"
         self.log_pattern = re.compile(self.log_regex)
@@ -389,8 +392,8 @@ class BunkerParser(Parser):
         "Deactivated" : r"^([0-9.-]*):\s\[[A-Za-z\s]+\]\s([A-Z]{1}[0-9]{1})\s[A-Za-z\s]+$",
     }
 
-    def __init__(self) -> None:
-        super().__init__()
+    # def __init__(self) -> None:
+    #     super().__init__()
 
 
     def parse(self, string) -> dict:

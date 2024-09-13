@@ -126,6 +126,7 @@ async def handle_kills(msgs, file, dbconnection):
                     dbconnection.store_message_send(msg["hash"])
 
 async def handle_bunkers(msgs, file, dbconnection):
+    """handle bunker events"""
     channel = client.get_channel(int(LOG_FEED_CHANNEL))
     p = BunkerParser()
     for m in msgs[file]:
@@ -137,13 +138,11 @@ async def handle_bunkers(msgs, file, dbconnection):
                     if msg["active"] and len(msg["since"]) > 0 and \
                        len(msg["coordinates"]) > 0 and \
                        len(msg["next"]) == 0:
-                        msg_str = (
-                            f"Bunker {msg["name"]} was activated. "
-                            f"Coordinates @ X={msg['coordinates']['x']} "
-                            f"Y={msg['coordinates']['y']} "
-                            f"Z={msg['coordinates']['z']}"
-                        )
-                        await channel.send(''.join(msg_str))
+                        msg_str = f"Bunker {msg['name']} was activated. "
+                        msg_str += f"Coordinates @ X={msg['coordinates']['x']} "
+                        msg_str += f"Y={msg['coordinates']['y']} "
+                        msg_str += f"Z={msg['coordinates']['z']}"
+                        await channel.send(msg_str)
                     dbconnection.update_bunker_status(msg)
                     dbconnection.store_message_send(msg["hash"])
 
@@ -161,6 +160,41 @@ async def log_parser_loop():
                 await handle_kills(msgs, file_key, db)
             elif "gameplay" in file_key:
                 await handle_bunkers(msgs, file_key, db)
+
+@client.command(name='bunkers')
+async def command_bunkers(ctx, bunker: str = None):
+    """Command to check Active bunkers"""
+    msg_str = None
+    db = ScumLogDataManager(DATABASE_FILE)
+    if bunker:
+        print(f"Will get data for Bunker {bunker}")
+        b = db.get_active_bunkers(bunker)
+        if len(b) > 0:
+            if b[0]["active"] == 0:
+                msg_str = f"Bunker {bunker} is not active."
+                if b[0]["next"] > 0:
+                    _next = b[0]["timestamp"] + b[0]["next"]
+                    msg_str += "\nWill be active @ "
+                    msg_str += f"{datetime.fromtimestamp(_next).strftime('%d.%m.%Y - %H:%M:%S')}"
+            else:
+                msg_str =f"Bunker {bunker} is active.\n"
+                msg_str += f"@ Coordinates X={b[0]['coordinates']['x']} "
+                msg_str += f"Y={b[0]['coordinates']['y']} "
+                msg_str += f"Z={b[0]['coordinates']['z']}"
+        else:
+            msg_str = f"Bunker {bunker} does not exist."
+    else:
+        print("No bunker given, will get all active bunkers.")
+        b = db.get_active_bunkers(None)
+        if len(b) > 0:
+            msg_str = "Following Bunkers are active.\n"
+            for bunk in b:
+                msg_str += f"Bunker {bunk['name']} is active.\n"
+                msg_str += f"@ Coordinates X={bunk['coordinates']['x']} "
+                msg_str += f"Y={bunk['coordinates']['y']} "
+                msg_str += f"Z={bunk['coordinates']['z']}\n"
+
+    await ctx.send(msg_str)
 
 @client.command(name='online')
 async def player_online(ctx, player: str):
