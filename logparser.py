@@ -127,10 +127,25 @@ class ScumSFTPLogParser:
 
             self.connect_sftp_p = self.connect_p.open_sftp()
         except paramiko.ssh_exception.SSHException as e:
+            print (f"SSHException catched. Message print {e}")
+            self.connect_p = None
+        except Exception as e:
+            print (f"Unspecified exception catched. Message print {e}")
             self.connect_p = None
 
+    def _check_connection_alive(self):
+        ret_val = True
+        try:
+            transport = self.connect_p.get_transport()
+            transport.send_ignore()
+        except EOFError as e:
+            self.connect_p.close()
+            ret_val = False
+        finally:
+            return ret_val
+        
     def _retrieve_files(self):
-        if self.connect_sftp_p is None:
+        if self.connect_sftp_p is None or not self._check_connection_alive():
             self._open_connection()
         try:
             for entry in self.connect_sftp_p.listdir_attr(self.logdirectory):
@@ -156,7 +171,7 @@ class ScumSFTPLogParser:
                 self._retry = False
 
     def _retrive_file_content(self):
-        if self.connect_sftp_p is None:
+        if self.connect_sftp_p is None or not self._check_connection_alive():
             self._open_connection()
         self.new_log_data = {}
         try:
