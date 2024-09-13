@@ -166,6 +166,17 @@ async def log_parser_loop():
             elif "gameplay" in file_key:
                 await handle_bunkers(msgs, file_key, db)
 
+@log_parser_loop.error
+async def on_loop_error(error):
+    """Error handler for the loop"""
+    print(f"Error during loop occoured: {error}")
+    if log_parser_loop.failed() and not log_parser_loop.is_running():
+        log_parser_loop.start()
+    elif log_parser_loop.failed and log_parser_loop.is_running():
+        log_parser_loop.restart()
+    else:
+        pass
+
 @client.command(name='bunkers')
 async def command_bunkers(ctx, bunker: str = None):
     """Command to check Active bunkers"""
