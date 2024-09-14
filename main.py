@@ -281,7 +281,7 @@ async def player_lastseen(ctx, player: str):
 @client.command(name=HELP_COMMAND)
 async def bot_help(ctx):
     """Help command"""
-    msg_str = f"My Name is {client.user}.\n"
+    msg_str = f"Hi, {ctx.author}. My Name is {client.user}.\n"
     msg_str += "You can call me with following commands:\n"
 
     await ctx.send(msg_str)
@@ -302,8 +302,8 @@ async def bot_help(ctx):
 
     await ctx.send(msg_str)
 
-    msg_str = "I will also report bunker openening, kills and players joig and disconnecting "
-    msg_str += "to the SCUM Server."
+    msg_str = "I will also report bunker openening, kills and players joining to and disconnecting "
+    msg_str += "from the SCUM Server."
 
     await ctx.send(msg_str)
 
