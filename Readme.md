@@ -22,6 +22,10 @@ SFTP_PORT= # SFTP-Port
 SFTP_USERNAME= # SFTP-User
 SFTP_PASSWORD= # SFTP-Passwort
 LOG_DIRECTORY= # Path to logfiles
+LOG_CHECK_INTERVAL= 60 # Interval in which bot will check server log files (default: 60 seconds)
+
+BOT_HELP_COMMAND= # Command to print bot help (default: buff)
+
 ```
 
 ## Build and run docker
