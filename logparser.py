@@ -133,11 +133,20 @@ class ScumSFTPLogParser:
             print (f"Unspecified exception catched. Message print {e}")
             self.connect_p = None
 
+    def _check_transport_alive(self):
+        return self.connect_p.get_transport().is_alive()
+
+    def _check_transport_active(self):
+        return self.connect_p.get_transport().is_active()
+
     def _check_connection_alive(self):
         ret_val = True
         try:
-            transport = self.connect_p.get_transport()
-            transport.send_ignore()
+            if self._check_connection_alive() and self._check_transport_active():
+                transport = self.connect_p.get_transport()
+                transport.send_ignore()
+            else:
+                ret_val = False
         except EOFError as e:
             print(e)
             self.connect_p.close()
