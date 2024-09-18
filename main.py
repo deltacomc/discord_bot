@@ -78,7 +78,8 @@ async def on_ready():
     lp = ScumSFTPLogParser(server=SFTP_SERVER, port=SFTP_PORT, passwd=SFTP_PASSWORD,
                            user=SFTP_USER, logdirectoy=LOG_DIRECTORY, debug_callback=None)
     # Start the loop that checks log files periodically
-    log_parser_loop.start()
+    if not log_parser_loop.is_running():
+        log_parser_loop.start()
 
 async def send_debug_message(message):
     """Function will send debug messages"""

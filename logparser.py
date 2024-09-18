@@ -88,7 +88,7 @@ class ScumSFTPLogParser:
     new_log_data = {}
     sent_entries :set
     debug_message = None
-    _retry : False
+    _retry= False
 
     # Dateipfade zum Speichern des Zeitstempels des letzten
     # Abrufs und der Hashes der gesendeten Logdateien
