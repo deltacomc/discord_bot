@@ -183,6 +183,28 @@ async def on_loop_error(error):
     else:
         pass
 
+@client.command(name="lifetime")
+async def command_lifetime(ctx, player: str = None):
+    """Command to check server liftime of players"""
+    msg_str = None
+    db = ScumLogDataManager(DATABASE_FILE)
+    if player:
+        logging.info(f"Get server lifetime for player {player}")
+        player_stat = db.get_player_status(player)
+        if len(player_stat) > 0:
+            msg_str = f"Player {player} lives on server for {player_stat[0]["lifetime"]} secs."
+        else:
+            msg_str = f"Player {player} has no life on this server."
+    else:
+        logging.info("Getting all players that visited the server")
+        msg_str = "Not yet implemented to get all players."
+        # player_stat = db.get_player_status()
+        # msg_str = "Following players have a liftime on this server:\n"
+        # for p in player_stat:
+        #     msg_str += f"{p} lives for {player_stat[p]["liftime"]} sec on this server.\n"
+
+    await ctx.send(msg_str)
+
 @client.command(name='bunkers')
 async def command_bunkers(ctx, bunker: str = None):
     """Command to check Active bunkers"""
