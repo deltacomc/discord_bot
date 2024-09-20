@@ -18,7 +18,7 @@ class ScumLogDataManager:
     logging: Output
 
     def __init__(self, db_name) -> None:
-        self.logging = Output()
+        self.logging = Output(_stderr = False)
         self.db_file = db_name
         self.db = sqlite3.connect(db_name)
         self._check_schema()
