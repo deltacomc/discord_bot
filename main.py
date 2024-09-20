@@ -24,6 +24,7 @@ from dotenv import load_dotenv
 sys.path.append('./')
 from logparser import ScumSFTPLogParser, LoginParser, KillParser, BunkerParser
 from datamanager import ScumLogDataManager
+from output import output
 # pylint: enable=wrong-import-position
 
 load_dotenv()
@@ -59,6 +60,8 @@ intents.message_content = True
 client = commands.Bot(command_prefix="!",intents=intents)
 lp: None
 
+logging = output()
+
 @client.event
 async def on_ready():
     """Function is called when bot is ready"""
@@ -69,7 +72,7 @@ async def on_ready():
             break
 
     if guild is not None:
-        print(
+        logging.info(
             f'{client.user} is connected to the following guild:\n'
             f'{guild.name}(id: {guild.id})\n'
             f'Starting log parser.'
@@ -170,7 +173,7 @@ async def log_parser_loop():
 @log_parser_loop.error
 async def on_loop_error(error):
     """Error handler for the loop"""
-    print(f"Error during loop occoured: {error}")
+    logging.error(f"Error during loop occoured: {error}")
     if log_parser_loop.failed() and not log_parser_loop.is_running():
         log_parser_loop.start()
     elif log_parser_loop.failed and log_parser_loop.is_running():
@@ -184,7 +187,7 @@ async def command_bunkers(ctx, bunker: str = None):
     msg_str = None
     db = ScumLogDataManager(DATABASE_FILE)
     if bunker:
-        print(f"Will get data for Bunker {bunker}")
+        logging.info(f"Will get data for Bunker {bunker}")
         b = db.get_active_bunkers(bunker)
         if len(b) > 0:
             if b[0]["active"] == 0:
@@ -201,7 +204,7 @@ async def command_bunkers(ctx, bunker: str = None):
         else:
             msg_str = f"Bunker {bunker} does not exist."
     else:
-        print("No bunker given, will get all active bunkers.")
+        logging.info("No bunker given, will get all active bunkers.",logging)
         b = db.get_active_bunkers(None)
         if len(b) > 0:
             msg_str = "Following Bunkers are active.\n"
@@ -219,7 +222,7 @@ async def command_bunkers(ctx, bunker: str = None):
 async def player_online(ctx, player: str):
     """Command to check if player is online"""
     message = ""
-    print(f"Get status for player {player}")
+    logging.info(f"Get status for player {player}")
     db = ScumLogDataManager(DATABASE_FILE)
     player_status = db.get_player_status(player)
 
@@ -248,7 +251,7 @@ async def player_lastseen(ctx, player: str):
     """Function to check last seen of a player"""
     message = ""
     local_timezone = ZoneInfo('Europe/Berlin')
-    print(f"Get status for player {player}")
+    logging.info(f"Get status for player {player}")
     db = ScumLogDataManager(DATABASE_FILE)
     player_status = db.get_player_status(player)
 
@@ -355,7 +358,7 @@ async def create_channel(ctx, channel_name='real-python'):
     guild = ctx.guild
     existing_channel = discord.utils.get(guild.channels, name=channel_name)
     if not existing_channel:
-        print(f'Creating a new channel: {channel_name}')
+        logging.info(f'Creating a new channel: {channel_name}')
         await guild.create_text_channel(channel_name)
 
 @client.event
@@ -367,7 +370,7 @@ async def on_command_error(ctx, error):
         await ctx.send(f"'{error.param.name}' is a required argument.")
     else:
         # All unhandled errors will print their original traceback
-        print(f'Ignoring exception in command {ctx.command}:', file=sys.stderr)
+        logging.error(f'Ignoring exception in command {ctx.command}:')
         traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
 client.run(TOKEN)
