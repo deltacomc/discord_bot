@@ -294,7 +294,7 @@ class ScumLogDataManager:
                 "status": player_data[0][4],
                 "login_timestamp" : player_data[0][8],
                 "logout_timestamp" : player_data[0][9],
-                "lifetime": p[0][10]
+                "lifetime": player_data[0][10]
                 }})
 
         return ret_val
