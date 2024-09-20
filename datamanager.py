@@ -8,7 +8,7 @@
 import sqlite3
 from datetime import datetime
 
-SCHEMA_VERSION = 101
+SCHEMA_VERSION = 102
 
 class ScumLogDataManager:
     """Manage Database access for bot"""
@@ -62,6 +62,8 @@ class ScumLogDataManager:
                        since INTEGER, next INTEGER)")
 
         cursor.execute("CREATE TABLE IF NOT EXISTS message_send (hash TEXT PRIMARY KEY, timestamp REAL)")
+
+        cursor.execute("CREATE TABLE IF NOT EXISTS log_hashes (timestamp REAL, hash TEXT PRIMARY KEY, file TEXT)")
 
         cursor.execute("CREATE TABLE IF NOT EXISTS scum_schema (name TEXT, schema_version INTEGER PRIMARY KEY)")
 
@@ -359,5 +361,32 @@ class ScumLogDataManager:
             age: int in seconds
         """
         self._discard_old_values("player", age)
+
+    def raw(self, query: str) -> object:
+        cursor = self.db.cursor()
+        ret = cursor.execute(query)
+        return ret.fetchall()
+
+    def update_log_file_hash(self, hash: str, file: str) -> None:
+        curr_time = datetime.timestamp(datetime.now())
+        query = f"SELECT hash FROM log_hashes WHERE hash = '{hash}'"
+        repl = self.raw(query)
+        if len(repl) == 0:
+            query = "INSERT INTO log_hashes (timestamp, hash, file) "
+            query += f"VALUES ({curr_time}, '{hash}', '{file}')"
+            repl = self.raw(query)
+            self.db.commit()
+
+    def get_log_file_hashes(self) -> dict:
+        retval= dict()
+        query = f"SELECT * FROM log_hashes"
+        repl = self.raw(query)
+        for item in repl:
+            retval.update({item[1]: item[2]})
+
+        return retval
+
+    def close(self) -> None:
+        self.db.close()
 
 # pylint: enable=line-too-long

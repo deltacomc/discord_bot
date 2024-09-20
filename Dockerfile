@@ -11,7 +11,7 @@ RUN mkdir /app
 ADD requirements.txt /app
 ADD main.py /app
 ADD datamanager.py /app
-ADD logparser.py /app
+ADD modules/ /app
 
 RUN addgroup -S bot -g 1000 && \
     adduser -S bot -G bot -u 1000 && \

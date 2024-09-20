@@ -21,10 +21,11 @@ from discord.ext import tasks
 from dotenv import load_dotenv
 
 # pylint: disable=wrong-import-position
-sys.path.append('./')
+#sys.path.append('./')
 from logparser import ScumSFTPLogParser, LoginParser, KillParser, BunkerParser
+from modules.sftploader import ScumSFTPLogParser
 from datamanager import ScumLogDataManager
-from output import output
+from modules.output import output
 # pylint: enable=wrong-import-position
 
 load_dotenv()
@@ -79,7 +80,7 @@ async def on_ready():
         )
     # Open SFTP connection to the game server
     lp = ScumSFTPLogParser(server=SFTP_SERVER, port=SFTP_PORT, passwd=SFTP_PASSWORD,
-                           user=SFTP_USER, logdirectoy=LOG_DIRECTORY, debug_callback=None)
+                           user=SFTP_USER, logdirectoy=LOG_DIRECTORY, database=DATABASE_FILE, debug_callback=None)
     # Start the loop that checks log files periodically
     if not log_parser_loop.is_running():
         log_parser_loop.start()
