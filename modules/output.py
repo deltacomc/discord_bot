@@ -41,32 +41,39 @@ class output:
         ret_val = False
         if self._file:
             with open(self._file, "a") as _output:
-                resp = _output.write(self._get_formated_message(_msg))
+                resp = _output.write(self._get_formated_message(_msg)+"\n")
             if resp > 0:
                 ret_val = True
 
         return ret_val
 
     def write_to_stdout(self, _msg: str) -> None:
-        sys.stdout.write(self._get_formated_message(_msg))
+        sys.stdout.write(self._get_formated_message(_msg)+"\n")
 
     def write_to_stderr(self, _msg: str) -> None:
-        sys.stderr.write(self._get_formated_message(_msg))
+        sys.stderr.write(self._get_formated_message(_msg)+"\n")
 
     def write_all_enabled(self, _msg: str) -> None:
 
         if self._file:
-            self.write_to_file(_msg)
+            self.write_to_file(_msg+"\n")
 
         if self._stdout:
-            self.write_to_stdout(_msg)
+            self.write_to_stdout(_msg+"\n")
 
         if self._stderr:
-            self.write_to_stderr(_msg)
+            self.write_to_stderr(_msg+"\n")
 
     def write_weighted_message(self, _msg: str, _level: int):
         if _level <= self._max_level:
-            self.write_all_enabled(_msg)
+            if self._file:
+                self.write_to_file(_msg+"\n")
+
+            if self._stdout:
+                self.write_to_stdout(_msg+"\n")
+
+            if self._stderr and _level >= self.ERROR:
+                self.write_to_stderr(_msg+"\n")
 
     def info(self, _msg: str):
         self.write_weighted_message(_msg, self.INFO)
