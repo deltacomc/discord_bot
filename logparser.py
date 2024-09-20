@@ -17,59 +17,8 @@ import chardet
 import paramiko
 import paramiko.ssh_exception
 
-
-class ScumFtpLogparser:
-    """Class representing a a log parser"""
-    ftp_server = ""
-    ftp_user = ""
-    ftp_password = ""
-    connect_p = None
-    current_log = []
-    current_timestamp = 0
-    logfile = "test.txt"
-
-
-    def __init__(self, server, user, passwd, logfile) -> None:
-        self.ftp_server = server
-        self.ftp_user = user
-        self.ftp_password = passwd
-        self.logfile = logfile
-        self.connect_p = FTP(server,user=user,passwd=passwd)
-        self._scum_log_parser_load_timestamp()
-
-    def _scum_log_parser_load_timestamp(self):
-        if os.path.exists("scum_log_parser_ts.txt"):
-            with open("scum_log_parser_ts.txt", "r", encoding="utf-8") as _fp:
-                self.current_timestamp = int(_fp.read())
-        else:
-            self.current_timestamp = 0
-
-    def _scum_log_parser_store_timestamp(self):
-        with open("scum_log_parser_ts.txt", "w", encoding="utf-8") as _fp:
-            _fp.write(str(self.current_timestamp))
-
-    def _scum_log_parser_retrive(self):
-        self.connect_p.login(user=self.ftp_user, passwd=self.ftp_password)
-        self.connect_p.retrlines(f"RETR {self.logfile}", callback=self._scum_ftp_logparser_getline)
-
-    def _scum_ftp_logparser_getline(self, string: str):
-        self.current_log.append(string)
-
-    def scum_log_parse(self) -> str:
-        """parse log"""
-        ret_val = []
-        self._scum_log_parser_retrive()
-        if self.current_timestamp < len(self.current_log):
-            # pylint: disable=unused-variable
-            for count, line in enumerate(self.current_log):
-                if line >= self.current_timestamp:
-                    ret_val.append(self.current_log[line])
-            # pylint: enable=unused-variable
-            self.current_timestamp = len(self.current_log)
-            self._scum_log_parser_store_timestamp()
-        self.current_log = []
-
-        return ret_val
+from modules.output import output
+from datamanager import ScumLogDataManager
 
 class ScumSFTPLogParser:
     """Class representing a a log parser"""
@@ -84,32 +33,37 @@ class ScumSFTPLogParser:
     logdirectory = "/"
     last_fetch_time = 0
     file_groups = {}
-    log_hashes :set
+    log_hashes: set
+    log_file_hashes: dict
     new_log_data = {}
-    sent_entries :set
+    sent_entries: set
     debug_message = None
     _retry= False
-
+    _database: str = None
     # Dateipfade zum Speichern des Zeitstempels des letzten
     # Abrufs und der Hashes der gesendeten Logdateien
     LAST_FETCH_FILE = 'last_fetch_time.txt'
     LOG_HASHES_FILE = 'log_hashes.txt'
     SENT_ENTRIES_FILE = 'sent_entries.txt'
 
-    def __init__(self, server, port, user, passwd, logdirectoy, debug_callback=None) -> None:
+    def __init__(self, server, port, user, passwd, logdirectoy, database=None, debug_callback=None) -> None:
         self.sftp_server = server
         self.sftp_user = user
         self.sftp_password = passwd
         self.sftp_port = port
         self.logdirectory = logdirectoy
 
+        self._database = database
+
         if debug_callback is not None:
             self.debug_message = debug_callback
         else:
             self.debug_message = self._debug_to_stdout
 
-        self.last_fetch_time = self.get_last_fetch_time()
-        self.log_hashes = self.get_existing_log_hashes()
+        self.last_fetch_time = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+
+        self.get_existing_log_hashes()
+
         self.sent_entries = self.get_sent_entries()
 
         self._open_connection()
@@ -155,6 +109,7 @@ class ScumSFTPLogParser:
         return ret_val
 
     def _retrieve_files(self):
+        print("retrive file listing")
         if self.connect_sftp_p is None or not self._check_connection_alive():
             self._open_connection()
         try:
@@ -182,11 +137,11 @@ class ScumSFTPLogParser:
                 self._retry = False
 
     def _retrive_file_content(self):
+        print("retrive file content")
         if self.connect_sftp_p is None or not self._check_connection_alive():
             self._open_connection()
         self.new_log_data = {}
         try:
-
             # pylint: disable=unused-variable
             for base_name, (latest_file, _) in self.file_groups.items():
             # pylint: enable=unused-variable
@@ -198,7 +153,6 @@ class ScumSFTPLogParser:
                         content = raw_content.decode(encoding)
                     except (UnicodeDecodeError, TypeError):
                         content = raw_content.decode('utf-8', errors='replace')
-
                     filtered_content = self.filter_game_version(content)
 
                     if filtered_content:
@@ -206,11 +160,10 @@ class ScumSFTPLogParser:
             # pylint: disable=line-too-long
                         if file_hash not in self.log_hashes:
                             self.new_log_data.update({latest_file: [filtered_content, self.sent_entries]})
-                            self.log_hashes.add(file_hash)
+                            self.update_log_hashes({"hash":file_hash, "name": latest_file})
                             if self.debug_message is not None:
                                 self.debug_message(f"Neue Logdatei erkannt: {latest_file}")
 
-            self.update_log_hashes(self.log_hashes)
             # pylint: enable=line-too-long
         except paramiko.ssh_exception.SSHException as e:
             # Something went wrong with the connection
@@ -238,31 +191,21 @@ class ScumSFTPLogParser:
         """return sha256 hash of gicen string"""
         return hashlib.sha256(s.encode('utf-8')).hexdigest()
 
-    def get_last_fetch_time(self):
-        """retruns the timestamp of the last time
-        a file was from the server"""
-        if os.path.exists(self.LAST_FETCH_FILE):
-            with open(self.LAST_FETCH_FILE, 'r', encoding='UTF-8') as f:
-                timestamp = f.read().strip()
-                return datetime.fromisoformat(timestamp) if timestamp else datetime.min
-        return datetime.min
-
-    def update_last_fetch_time(self):
-        """Updates the last fetched file"""
-        with open(self.LAST_FETCH_FILE, 'w', encoding='UTF-8') as f:
-            f.write(datetime.now().isoformat())
-
-    def get_existing_log_hashes(self):
+    def get_existing_log_hashes(self) -> None:
         """loads hashes of already read files"""
-        if os.path.exists(self.LOG_HASHES_FILE):
-            with open(self.LOG_HASHES_FILE, 'r', encoding='UTF-8') as f:
-                return set(line.strip() for line in f)
-        return set()
+        db = ScumLogDataManager(self._database)
+        self.log_hashes = set()
+        self.log_file_hashes = db.get_log_file_hashes()
+        for hash in self.log_file_hashes:
+            self.log_hashes.add(hash)
 
-    def update_log_hashes(self,hashes):
+    def update_log_hashes(self, hash: dict):
         """update has file of already read files"""
-        with open(self.LOG_HASHES_FILE, 'w', encoding='UTF-8') as f:
-            f.write('\n'.join(hashes))
+        db = ScumLogDataManager(self._database)
+        self.log_file_hashes.update({hash["hash"]: hash["name"]})
+        self.log_hashes.add(hash["hash"])
+        db.update_log_file_hash(hash["hash"], hash["name"])
+        db.close()
 
     def get_sent_entries(self):
         """load hashes of already sent messages (deprecated)"""
