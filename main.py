@@ -82,6 +82,10 @@ async def on_ready():
     lp = ScumSFTPLogParser(server=SFTP_SERVER, port=SFTP_PORT, passwd=SFTP_PASSWORD,
                            user=SFTP_USER, logdirectoy=LOG_DIRECTORY,
                            database=DATABASE_FILE, debug_callback=None)
+    
+    #call database manager to initialize db
+    ScumLogDataManager(DATABASE_FILE)
+
     # Start the loop that checks log files periodically
     if not log_parser_loop.is_running():
         log_parser_loop.start()

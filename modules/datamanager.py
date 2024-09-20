@@ -25,16 +25,21 @@ class ScumLogDataManager:
 
     def _check_schema(self):
         cursor = self.db.cursor()
+        cursor.execute("CREATE TABLE IF NOT EXISTS scum_schema (name TEXT, schema_version INTEGER PRIMARY KEY)")
+        self.db.commit()
         try:
             schema_version = cursor.execute("SELECT schema_version FROM scum_schema WHERE name = 'schema'")
             ver = schema_version.fetchone()
-            if ver[0] >= SCHEMA_VERSION:
-                return True
-            elif ver[0] < SCHEMA_VERSION:
-                self._update_schema()
-                return True
+            if ver is not None:
+                if ver[0] >= SCHEMA_VERSION:
+                    return True
+                elif ver[0] < SCHEMA_VERSION:
+                    self._update_schema()
+                    return True
+                else:
+                    return False
             else:
-                return False
+                self._init_schema()
         except sqlite3.OperationalError as e:
             self.logging.error(e)
             self._init_schema()
