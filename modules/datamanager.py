@@ -172,10 +172,13 @@ class ScumLogDataManager:
 
             else:
                 state = False
-                login_ts = player_data[0][8]       
+                login_ts = player_data[0][8]
                 loggedout_timestamp = self._get_timestamp(player['timestamp'])
-                server_lifetime = loggedout_timestamp - login_ts
-                server_lifetime_all = server_lifetime + player_data[0][10]
+                if login_ts > 0 and login_ts < loggedout_timestamp:
+                    server_lifetime = loggedout_timestamp - login_ts
+                    server_lifetime_all = server_lifetime + player_data[0][10]
+                else:
+                    server_lifetime_all = player_data[0][10]
                 cursor.execute(f"UPDATE player SET  \
                                timestamp = {self._get_timestamp(player['timestamp'])}, \
                                loggedin = {state}, \
