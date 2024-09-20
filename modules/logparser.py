@@ -10,8 +10,6 @@ import json
 
 import hashlib
 
-from modules.output import Output
-
 class Parser:
     """Abstract class for log data parser"""
     log_regex = ""

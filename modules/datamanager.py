@@ -7,6 +7,7 @@
 # pylint: disable=line-too-long
 import sqlite3
 from datetime import datetime
+from modules.output import Output
 
 SCHEMA_VERSION = 102
 
@@ -14,8 +15,10 @@ class ScumLogDataManager:
     """Manage Database access for bot"""
     db = None
     db_file = ""
+    logging: Output
 
     def __init__(self, db_name) -> None:
+        self.logging = Output()
         self.db_file = db_name
         self.db = sqlite3.connect(db_name)
         self._check_schema()
@@ -33,7 +36,7 @@ class ScumLogDataManager:
             else:
                 return False
         except sqlite3.Error as e:
-            print(e)
+            self.logging.error(e)
             self._init_schema()
             return True
 
@@ -72,7 +75,7 @@ class ScumLogDataManager:
         self.db.commit()
 
     def _update_schema_version(self):
-        print("Update Database Schema version.")
+        self.logging.info("Update Database Schema version.")
         cursor = self.db.cursor()
         check_column = "SELECT COUNT(*) AS CNTREC FROM "
         check_column += "scum_schema WHERE name='schema'"
@@ -130,10 +133,10 @@ class ScumLogDataManager:
         cursor.execute(f"SELECT * FROM player WHERE steamid = '{player['steamID']}'")
         player_data = cursor.fetchall()
         if len(player_data) > 1:
-            print("Multiple entries found with same steamID")
+            self.logging.warning("Multiple entries found with same steamID")
             return False
         elif len(player_data) == 0:
-            print("No User with steamID in Database")
+            self.logging.warning("No User with steamID in Database")
             if player["state"] == "in":
                 state = True
                 loggedin_timestamp = self._get_timestamp(player['timestamp'])
@@ -186,7 +189,7 @@ class ScumLogDataManager:
         bunker_data = cursor.fetchall()
         statement = None
         if len(bunker_data) == 0:
-            print("Bunker not in Database")
+            self.logging.info("Bunker not in Database")
             if len(bunker["coordinates"]) != 0 and len(bunker["next"]) == 0 and bunker["active"]:
                 statement = "INSERT INTO bunkers (name, timestamp, active, since, next,"
                 statement += "coordinates_x, coordinates_y, coordinates_z) VALUES "
@@ -215,7 +218,7 @@ class ScumLogDataManager:
                 statement += "0, 0, 0, 0, 0)"
 
         elif len(bunker_data) == 1:
-            print(f"Bunker {bunker['name']} in Database")
+            self.logging.info(f"Bunker {bunker['name']} in Database")
             if len(bunker["coordinates"]) > 0 and len(bunker["next"]) == 0 and bunker["active"]: # Active
                 statement = "UPDATE bunkers SET "
                 statement += f"timestamp = {self._get_timestamp(bunker['timestamp'])},"
@@ -252,7 +255,7 @@ class ScumLogDataManager:
                 statement += "coordinates_z = 0 "
                 statement += f"WHERE name = '{bunker['name']}'"
         else:
-            print(f"Not updateing database more than one bunker found with the same name {bunker['name']}")
+            self.logging.info(f"Not updateing database more than one bunker found with the same name {bunker['name']}")
 
         if statement:
             cursor.execute(''.join(statement))
@@ -268,7 +271,7 @@ class ScumLogDataManager:
         if len(player_data) == 0:
             ret_val = []
         elif len(player_data) > 1:
-            print("Found more than one Player with that name.")
+            self.logging.info("Found more than one Player with that name.")
             for p in player_data:
                 ret_val.append({p[3]: {
                                "status": p[4],
@@ -276,7 +279,7 @@ class ScumLogDataManager:
                                "logout_timestamp" : p[9]
                                }})
         else:
-            print("One Player found.")
+            self.logging.info("One Player found.")
             ret_val.append({player_data[0][3]: {
                 "status": player_data[0][4],
                 "login_timestamp" : player_data[0][8],
@@ -297,7 +300,7 @@ class ScumLogDataManager:
                 retval = []
             elif len(bunker_data) > 1:
                 # 1, 1726252409, 'C1', 1, -393614.781, 216967.266, 59906.152, 0, 0
-                print("Found more than one Bunker with that name.")
+                self.logging.info("Found more than one Bunker with that name.")
                 for p in bunker_data:
                     retval.append({
                             "name": p[2],
@@ -312,7 +315,7 @@ class ScumLogDataManager:
                             }
                             })
             else:
-                print("One Bunker found.")
+                self.logging.info("One Bunker found.")
                 retval.append({
                         "name": bunker_data[0][2],
                         "timestamp": bunker_data[0][1],
@@ -332,7 +335,7 @@ class ScumLogDataManager:
                 retval = []
             elif len(bunker_data) > 1:
                 # 1, 1726252409, 'C1', 1, -393614.781, 216967.266, 59906.152, 0, 0
-                print("Got all Bunker Data")
+                self.logging.info("Got all Bunker Data")
                 for p in bunker_data:
                     retval.append({
                             "name": p[2],

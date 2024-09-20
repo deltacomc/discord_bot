@@ -18,7 +18,7 @@ from modules.output import Output
 from modules.datamanager import ScumLogDataManager
 
 class ScumSFTPLogParser:
-    """Class representing a a log parser"""
+    """Class representing a log parser"""
     sftp_server = ""
     sftp_user = ""
     sftp_password = ""
@@ -38,6 +38,8 @@ class ScumSFTPLogParser:
     _retry= False
     _database: str = None
 
+    logging : Output
+
     def __init__(self, server, port, user, passwd, logdirectoy, database=None, debug_callback=None) -> None:
         self.sftp_server = server
         self.sftp_user = user
@@ -46,6 +48,8 @@ class ScumSFTPLogParser:
         self.logdirectory = logdirectoy
 
         self._database = database
+        
+        self.logging = Output(_stderr = False)
 
         if debug_callback is not None:
             self.debug_message = debug_callback
@@ -73,10 +77,10 @@ class ScumSFTPLogParser:
 
             self.connect_sftp_p = self.connect_p.open_sftp()
         except paramiko.ssh_exception.SSHException as e:
-            print (f"SSHException catched. Message print {e}")
+            self.logging.error(f"SSHException catched. Message print {e}")
             self.connect_p = None
         except Exception as e:
-            print (f"Unspecified exception catched. Message print {e}")
+            self.logging.error(f"Unspecified exception catched. Message print {e}")
             self.connect_p = None
 
     def _check_transport_alive(self):
@@ -94,14 +98,14 @@ class ScumSFTPLogParser:
             else:
                 ret_val = False
         except EOFError as e:
-            print(e)
+            self.logging.error(e)
             self.connect_p.close()
             ret_val = False
 
         return ret_val
 
     def _retrieve_files(self):
-        print("retrive file listing")
+        self.logging.debug("retrive file listing")
         if self.connect_sftp_p is None or not self._check_connection_alive():
             self._open_connection()
         try:
@@ -119,7 +123,7 @@ class ScumSFTPLogParser:
         except paramiko.ssh_exception.SSHException as e:
             # Something went wrong with the connection
             # Try to reopen and rety
-            print(e)
+            self.logging.error(e)
             self._open_connection()
             if not self._retry and self.connect_p is not None:
                 self._retry = True
@@ -129,7 +133,7 @@ class ScumSFTPLogParser:
                 self._retry = False
 
     def _retrive_file_content(self):
-        print("retrive file content")
+        self.logging.debug("retrive file content")
         if self.connect_sftp_p is None or not self._check_connection_alive():
             self._open_connection()
         self.new_log_data = {}
@@ -205,6 +209,6 @@ class ScumSFTPLogParser:
         return self._retrive_file_content()
 
     def _debug_to_stdout(self, msg):
-        print(msg)
+        self.logging.debug(msg)
 
 # pylint: enable=line-too-long
