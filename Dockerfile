@@ -20,6 +20,6 @@ WORKDIR /app
 
 RUN python -m pip install -r requirements.txt 
 
-USER bot
+#USER bot
 ENV PYTHONPATH=/app
 CMD ["python", "-u", "./main.py"]

@@ -156,7 +156,7 @@ class ScumLogDataManager:
                 loggedout_timestamp = self._get_timestamp(player['timestamp'])
 
             cursor.execute(f"INSERT INTO player (timestamp, steamid, username, loggedin, coordinates_x, \
-                           coordinates_y, coordinates_z, login_timestamp, logout_timestamp) \
+                           coordinates_y, coordinates_z, login_timestamp, logout_timestamp, server_lifetime) \
                            VALUES ({self._get_timestamp(player['timestamp'])}, {player['steamID']}, '{player['username']}', \
                            {state}, {player['coordinates']['x']}, {player['coordinates']['y']}, {player['coordinates']['z']}, \
                            {loggedin_timestamp}, {loggedout_timestamp}, 0)")
