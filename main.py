@@ -192,7 +192,7 @@ async def command_lifetime(ctx, player: str = None):
         logging.info(f"Get server lifetime for player {player}")
         player_stat = db.get_player_status(player)
         if len(player_stat) > 0:
-            msg_str = f"Player {player} lives on server for {player_stat[0]["lifetime"]} secs."
+            msg_str = f"Player {player} lives on server for {player_stat[0][player]["lifetime"]} secs."
         else:
             msg_str = f"Player {player} has no life on this server."
     else:
