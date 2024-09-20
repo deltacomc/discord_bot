@@ -4,6 +4,9 @@
     @CLicense: MIT
     @Description: Get logfiles from ftp server
 """
+import os
+from ftplib import FTP
+
 class ScumFtpLogparser:
     """Class representing a a log parser"""
     ftp_server = ""

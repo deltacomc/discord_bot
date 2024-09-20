@@ -7,13 +7,10 @@
 # pylint: disable=broad-exception-caught
 import re
 import json
-from datetime import datetime
-from ftplib import FTP
 
 import hashlib
-import paramiko.ssh_exception
 
-from modules.output import output
+from modules.output import Output
 
 class Parser:
     """Abstract class for log data parser"""

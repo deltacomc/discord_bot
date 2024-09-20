@@ -5,7 +5,6 @@
     @Description: Get logfiles from sftp server
 """
 # pylint: disable=broad-exception-caught
-import os
 import re
 import stat
 from datetime import datetime
@@ -15,8 +14,8 @@ import chardet
 import paramiko
 import paramiko.ssh_exception
 
-from modules.output import output
-from datamanager import ScumLogDataManager
+from modules.output import Output
+from modules.datamanager import ScumLogDataManager
 
 class ScumSFTPLogParser:
     """Class representing a a log parser"""

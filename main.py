@@ -22,8 +22,8 @@ from dotenv import load_dotenv
 
 # pylint: disable=wrong-import-position
 #sys.path.append('./')
-from logparser import LoginParser, KillParser, BunkerParser
-from datamanager import ScumLogDataManager
+from modules.datamanager import ScumLogDataManager
+from modules.logparser import LoginParser, KillParser, BunkerParser
 from modules.sftploader import ScumSFTPLogParser
 from modules.output import Output
 # pylint: enable=wrong-import-position
