@@ -15,7 +15,6 @@ import paramiko.ssh_exception
 
 from modules.output import output
 
-
 class Parser:
     """Abstract class for log data parser"""
     log_regex = ""
