@@ -9,7 +9,7 @@ import sqlite3
 from datetime import datetime
 from modules.output import Output
 
-SCHEMA_VERSION = 102
+SCHEMA_VERSION = 103
 
 class ScumLogDataManager:
     """Manage Database access for bot"""
@@ -45,20 +45,24 @@ class ScumLogDataManager:
         self._init_schema()
         # Update existing tables
         # check if new column exists that we want to add
-        # check_column = f"SELECT COUNT(*) AS CNTREC FROM "
-        # check_column += f"pragma_table_info('{tablename}') WHERE name='{column_name}'"
-        # cursor = self.db.cursor()
-        # cursor.execute(check_column)
-        # result = cursor.fetchon()
-        # if result == 0:
+        check_column = "SELECT COUNT(*) AS CNTREC FROM "
+        check_column += "pragma_table_info('player') WHERE name='server_lifetime'"
+        cursor = self.db.cursor()
+        cursor.execute(check_column)
+        result = cursor.fetchone()
+        if result[0] == 0:
         # update table
+            add_column = "ALTER TABLE player "
+            add_column += "ADD server_lifetime INTEGER DEFAULT 0"
+            cursor.execute(add_column)
+            self.db.commit()
 
     def _init_schema(self):
         cursor = self.db.cursor()
         ## Table does not exists so we create out tables
         cursor.execute("CREATE TABLE IF NOT EXISTS player (id INTEGER PRIMARY KEY, timestamp INTEGER, steamid INTEGER,\
                        username TEXT, loggedin BOOL, coordinates_x REAL, coordinates_y REAL, coordinates_z REAL, \
-                       login_timestamp INTEGER, logout_timestamp INTEGER)")
+                       login_timestamp INTEGER, logout_timestamp INTEGER, server_lifetime INTEGER)")
 
         cursor.execute("CREATE TABLE IF NOT EXISTS bunkers (id INTEGER PRIMARY KEY, timestamp INTEGER, \
                        name TEXT, active BOOL, coordinates_x REAL, coordinates_y REAL, coordinates_z REAL, \
@@ -150,12 +154,10 @@ class ScumLogDataManager:
                            coordinates_y, coordinates_z, login_timestamp, logout_timestamp) \
                            VALUES ({self._get_timestamp(player['timestamp'])}, {player['steamID']}, '{player['username']}', \
                            {state}, {player['coordinates']['x']}, {player['coordinates']['y']}, {player['coordinates']['z']}, \
-                           {loggedin_timestamp}, {loggedout_timestamp})")
+                           {loggedin_timestamp}, {loggedout_timestamp}, 0)")
             self.db.commit()
             return True
         else:
-            player_data = cursor.fetchall()
-
             if player["state"] == "in":
                 state = True
                 loggedin_timestamp = self._get_timestamp(player['timestamp'])
@@ -170,14 +172,18 @@ class ScumLogDataManager:
 
             else:
                 state = False
+                login_ts = player_data[0][8]       
                 loggedout_timestamp = self._get_timestamp(player['timestamp'])
+                server_lifetime = loggedout_timestamp - login_ts
+                server_lifetime_all = server_lifetime + player_data[0][10]
                 cursor.execute(f"UPDATE player SET  \
                                timestamp = {self._get_timestamp(player['timestamp'])}, \
                                loggedin = {state}, \
                                coordinates_x = {player['coordinates']['x']}, \
                                coordinates_y = {player['coordinates']['y']}, \
                                coordinates_z ={player['coordinates']['z']}, \
-                               logout_timestamp = {loggedout_timestamp} \
+                               logout_timestamp = {loggedout_timestamp}, \
+                               server_lifetime = {server_lifetime_all} \
                                WHERE steamid == '{player['steamID']}'")
             self.db.commit()
             return True
@@ -276,14 +282,16 @@ class ScumLogDataManager:
                 ret_val.append({p[3]: {
                                "status": p[4],
                                "login_timestamp" : p[8],
-                               "logout_timestamp" : p[9]
+                               "logout_timestamp" : p[9],
+                               "lifetime": p[10]
                                }})
         else:
             self.logging.info("One Player found.")
             ret_val.append({player_data[0][3]: {
                 "status": player_data[0][4],
                 "login_timestamp" : player_data[0][8],
-                "logout_timestamp" : player_data[0][9]
+                "logout_timestamp" : player_data[0][9],
+                "lifetime": p[0][10]
                 }})
 
         return ret_val
