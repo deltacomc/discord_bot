@@ -35,7 +35,7 @@ class ScumLogDataManager:
                 return True
             else:
                 return False
-        except sqlite3.Error as e:
+        except sqlite3.OperationalError as e:
             self.logging.error(e)
             self._init_schema()
             return True
