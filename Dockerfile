@@ -10,7 +10,6 @@ RUN mkdir /app
 
 ADD requirements.txt /app
 ADD main.py /app
-ADD datamanager.py /app
 ADD modules/ /app
 
 RUN addgroup -S bot -g 1000 && \
