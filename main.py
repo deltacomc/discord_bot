@@ -22,10 +22,10 @@ from dotenv import load_dotenv
 
 # pylint: disable=wrong-import-position
 #sys.path.append('./')
-from logparser import ScumSFTPLogParser, LoginParser, KillParser, BunkerParser
-from modules.sftploader import ScumSFTPLogParser
+from logparser import LoginParser, KillParser, BunkerParser
 from datamanager import ScumLogDataManager
-from modules.output import output
+from modules.sftploader import ScumSFTPLogParser
+from modules.output import Output
 # pylint: enable=wrong-import-position
 
 load_dotenv()
@@ -61,7 +61,7 @@ intents.message_content = True
 client = commands.Bot(command_prefix="!",intents=intents)
 lp: None
 
-logging = output()
+logging = Output()
 
 @client.event
 async def on_ready():
