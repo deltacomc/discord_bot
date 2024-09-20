@@ -80,7 +80,8 @@ async def on_ready():
         )
     # Open SFTP connection to the game server
     lp = ScumSFTPLogParser(server=SFTP_SERVER, port=SFTP_PORT, passwd=SFTP_PASSWORD,
-                           user=SFTP_USER, logdirectoy=LOG_DIRECTORY, database=DATABASE_FILE, debug_callback=None)
+                           user=SFTP_USER, logdirectoy=LOG_DIRECTORY,
+                           database=DATABASE_FILE, debug_callback=None)
     # Start the loop that checks log files periodically
     if not log_parser_loop.is_running():
         log_parser_loop.start()
@@ -205,7 +206,7 @@ async def command_bunkers(ctx, bunker: str = None):
         else:
             msg_str = f"Bunker {bunker} does not exist."
     else:
-        logging.info("No bunker given, will get all active bunkers.",logging)
+        logging.info("No bunker given, will get all active bunkers.")
         b = db.get_active_bunkers(None)
         if len(b) > 0:
             msg_str = "Following Bunkers are active.\n"
