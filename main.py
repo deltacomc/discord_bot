@@ -41,12 +41,14 @@ DEBUG_CHANNEL = os.getenv("DEBUG_CHANNEL")
 LOG_FEED_CHANNEL = os.getenv("SCUM_LOG_FEED_CHANNEL")
 LOG_DIRECTORY = os.getenv("LOG_DIRECTORY")
 DATABASE_FILE = os.getenv("DATABASE_FILE")
-LOG_CHECK_INTERVAL = float(os.getenv("LOG_CHECK_INTERVAL"))
+LOG_CHECK_INTERVAL = os.getenv("LOG_CHECK_INTERVAL")
 HELP_COMMAND = os.getenv("BOT_HELP_COMMAND")
 
 
 if LOG_CHECK_INTERVAL is None:
     LOG_CHECK_INTERVAL = 60.0
+else:
+    LOG_CHECK_INTERVAL = float(LOG_CHECK_INTERVAL)
 
 if HELP_COMMAND is None:
     HELP_COMMAND = "buffi"
@@ -82,7 +84,7 @@ async def on_ready():
     lp = ScumSFTPLogParser(server=SFTP_SERVER, port=SFTP_PORT, passwd=SFTP_PASSWORD,
                            user=SFTP_USER, logdirectoy=LOG_DIRECTORY,
                            database=DATABASE_FILE, debug_callback=None)
-    
+
     #call database manager to initialize db
     ScumLogDataManager(DATABASE_FILE)
 
