@@ -92,6 +92,23 @@ async def on_ready():
     if not log_parser_loop.is_running():
         log_parser_loop.start()
 
+def _convert_time(in_sec: int):
+    days = 0
+    hours = 0
+    minutes = 0
+    seconds = in_sec
+
+    days = int(in_sec / 86400)
+    seconds = in_sec % 86400
+
+    hours = int(seconds / 3600)
+    seconds = seconds % 3600
+
+    minutes = int(seconds / 60)
+    seconds = int(seconds % 60)
+
+    return f"{days}d {hours}:{minutes}:{seconds}"
+
 async def send_debug_message(message):
     """Function will send debug messages"""
     channel = client.get_channel(int(DEBUG_CHANNEL))
@@ -198,7 +215,8 @@ async def command_lifetime(ctx, player: str = None):
         logging.info(f"Get server lifetime for player {player}")
         player_stat = db.get_player_status(player)
         if len(player_stat) > 0:
-            msg_str = f"Player {player} lives on server for {player_stat[0][player]["lifetime"]} secs."
+            lifetime = _convert_time(player_stat[0][player]["lifetime"])
+            msg_str = f"Player {player} lives on server for {lifetime}."
         else:
             msg_str = f"Player {player} has no life on this server."
     else:
@@ -294,7 +312,7 @@ async def player_lastseen(ctx, player: str):
                 if p[player]["status"] == 0:
                     state = "offline"
                     lasstseen = datetime.fromtimestamp(player_status[0][player]["logout_timestamp"],
-                                                       local_timezone).strftime('%Y-%m-%d %H:%M:%S')
+                                                       local_timezone).strftime('%d.%m.%Y %H:%M:%S')
                 else:
                     state = "online"
                     lasstseen = "now"
