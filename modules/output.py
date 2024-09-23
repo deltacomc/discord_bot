@@ -42,7 +42,7 @@ class Output:
         ret_val = False
         if self._file:
             with open(self._file, "a", encoding="UTF-8") as _output:
-                resp = _output.write(self._get_formated_message(_msg)+"\n")
+                resp = _output.write(self._get_formated_message(_msg))
             if resp > 0:
                 ret_val = True
 
@@ -50,11 +50,11 @@ class Output:
 
     def write_to_stdout(self, _msg: str) -> None:
         """write log message explicitly to stdout"""
-        sys.stdout.write(self._get_formated_message(_msg)+"\n")
+        sys.stdout.write(self._get_formated_message(_msg))
 
     def write_to_stderr(self, _msg: str) -> None:
         """write log message explicitly to stderr"""
-        sys.stderr.write(self._get_formated_message(_msg)+"\n")
+        sys.stderr.write(self._get_formated_message(_msg))
 
     def write_all_enabled(self, _msg: str) -> None:
         """write log message explicitly to all available destinations"""
