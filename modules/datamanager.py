@@ -5,6 +5,7 @@
     @Description:
 """
 # pylint: disable=line-too-long
+import os
 import sqlite3
 from datetime import datetime
 from modules.output import Output
@@ -20,6 +21,12 @@ class ScumLogDataManager:
     def __init__(self, db_name) -> None:
         self.logging = Output(_stderr = False)
         self.db_file = db_name
+        if not os.path.exists(self.db_file):
+            # pylint: disable=unused-variable
+            with open(self.db_file , "w", encoding="UTF-8") as fp:
+                pass
+            # pylint: enable=unused-variable
+
         self.db = sqlite3.connect(db_name)
         self._check_schema()
 
