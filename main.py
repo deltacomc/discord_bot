@@ -169,9 +169,10 @@ async def handle_bunkers(msgs, file, dbconnection):
                 msg = p.parse(mm)
                 if msg and dbconnection.check_message_send(msg["hash"]):
                     # Bunker activaed
+                    bunker_data = dbconnection.get_active_bunkers(msg['name'])
                     if msg["active"] and len(msg["since"]) > 0 and \
                        len(msg["coordinates"]) > 0 and \
-                       len(msg["next"]) == 0:
+                       len(msg["next"]) == 0 and bunker_data[0]['active'] == 0:
                         msg_str = f"Bunker {msg['name']} was activated. "
                         msg_str += f"Coordinates @ X={msg['coordinates']['x']} "
                         msg_str += f"Y={msg['coordinates']['y']} "
