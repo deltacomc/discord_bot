@@ -393,23 +393,26 @@ class ScumLogDataManager:
         self._discard_old_values("player", age)
 
     def raw(self, query: str) -> object:
+        """raw sql query"""
         cursor = self.db.cursor()
         ret = cursor.execute(query)
         return ret.fetchall()
 
-    def update_log_file_hash(self, hash: str, file: str) -> None:
+    def update_log_file_hash(self, _hash: str, file: str) -> None:
+        """update log file hash in database"""
         curr_time = datetime.timestamp(datetime.now())
-        query = f"SELECT hash FROM log_hashes WHERE hash = '{hash}'"
+        query = f"SELECT hash FROM log_hashes WHERE hash = '{_hash}'"
         repl = self.raw(query)
         if len(repl) == 0:
             query = "INSERT INTO log_hashes (timestamp, hash, file) "
-            query += f"VALUES ({curr_time}, '{hash}', '{file}')"
+            query += f"VALUES ({curr_time}, '{_hash}', '{file}')"
             repl = self.raw(query)
             self.db.commit()
 
     def get_log_file_hashes(self) -> dict:
+        """get log file hash from database"""
         retval= dict()
-        query = f"SELECT * FROM log_hashes"
+        query = "SELECT * FROM log_hashes"
         repl = self.raw(query)
         for item in repl:
             retval.update({item[1]: item[2]})
@@ -417,6 +420,8 @@ class ScumLogDataManager:
         return retval
 
     def close(self) -> None:
+        """close database connection"""
+        self.db.commit()
         self.db.close()
 
 # pylint: enable=line-too-long
