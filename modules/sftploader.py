@@ -40,7 +40,8 @@ class ScumSFTPLogParser:
 
     logging : Output
 
-    def __init__(self, server, port, user, passwd, logdirectoy, database=None, debug_callback=None) -> None:
+    def __init__(self, server, port, user, passwd,
+                 logdirectoy, database=None, debug_callback=None) -> None:
         self.sftp_server = server
         self.sftp_user = user
         self.sftp_password = passwd
@@ -48,7 +49,7 @@ class ScumSFTPLogParser:
         self.logdirectory = logdirectoy
 
         self._database = database
-        
+
         self.logging = Output(_stderr = False)
 
         if debug_callback is not None:
@@ -192,15 +193,15 @@ class ScumSFTPLogParser:
         db = ScumLogDataManager(self._database)
         self.log_hashes = set()
         self.log_file_hashes = db.get_log_file_hashes()
-        for hash in self.log_file_hashes:
-            self.log_hashes.add(hash)
+        for _hash in self.log_file_hashes:
+            self.log_hashes.add(_hash)
 
-    def update_log_hashes(self, hash: dict):
+    def update_log_hashes(self, _hash: dict):
         """update has file of already read files"""
         db = ScumLogDataManager(self._database)
-        self.log_file_hashes.update({hash["hash"]: hash["name"]})
-        self.log_hashes.add(hash["hash"])
-        db.update_log_file_hash(hash["hash"], hash["name"])
+        self.log_file_hashes.update({_hash["hash"]: _hash["name"]})
+        self.log_hashes.add(_hash["hash"])
+        db.update_log_file_hash(_hash["hash"], _hash["name"])
         db.close()
 
     def scum_log_parse(self) -> str:
