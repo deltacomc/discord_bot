@@ -344,6 +344,7 @@ async def player_lastseen(ctx, player: str):
             message = f"Player: {player} is currently {state} and was last seen {lasstseen}."
 
     await ctx.send(message)
+    db.close()
 
 @client.command(name=HELP_COMMAND)
 async def bot_help(ctx):
