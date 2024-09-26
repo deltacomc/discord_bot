@@ -230,6 +230,7 @@ async def command_lifetime(ctx, player: str = None):
             msg_str += f"{p['name']} lives for {lifetime} on this server.\n"
 
     await ctx.send(msg_str)
+    db.close()
 
 @client.command(name='bunkers')
 async def command_bunkers(ctx, bunker: str = None):
@@ -267,6 +268,7 @@ async def command_bunkers(ctx, bunker: str = None):
             msg_str = "No active bunkers found."
 
     await ctx.send(msg_str)
+    db.close()
 
 @client.command(name='online')
 async def player_online(ctx, player: str = None):
@@ -308,6 +310,7 @@ async def player_online(ctx, player: str = None):
             message = "No players are online at the moment."
 
     await ctx.send(message)
+    db.close()
 
 @client.command(name='lastseen')
 async def player_lastseen(ctx, player: str):
