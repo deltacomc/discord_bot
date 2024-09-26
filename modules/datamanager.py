@@ -282,11 +282,14 @@ class ScumLogDataManager:
             cursor.execute(''.join(statement))
             self.db.commit()
 
-    def get_player_status(self, player_ame) -> list:
+    def get_player_status(self, player_name = None) -> list:
         """get player data from database"""
         ret_val = []
         cursor = self.db.cursor()
-        cursor.execute(f"SELECT * FROM player WHERE username = '{player_ame}'")
+        if player_name:
+            cursor.execute(f"SELECT * FROM player WHERE username = '{player_name}'")
+        else:
+            cursor.execute("SELECT * FROM player")
         player_data = cursor.fetchall()
 
         if len(player_data) == 0:
@@ -294,20 +297,21 @@ class ScumLogDataManager:
         elif len(player_data) > 1:
             self.logging.info("Found more than one Player with that name.")
             for p in player_data:
-                ret_val.append({p[3]: {
+                ret_val.append({
+                               "name": p[3],
                                "status": p[4],
                                "login_timestamp" : p[8],
                                "logout_timestamp" : p[9],
                                "lifetime": p[10]
-                               }})
+                               })
         else:
             self.logging.info("One Player found.")
-            ret_val.append({player_data[0][3]: {
+            ret_val.append({"name": player_data[0][3],
                 "status": player_data[0][4],
                 "login_timestamp" : player_data[0][8],
                 "logout_timestamp" : player_data[0][9],
                 "lifetime": player_data[0][10]
-                }})
+                })
 
         return ret_val
 
