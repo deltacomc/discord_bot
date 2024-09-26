@@ -411,7 +411,7 @@ class ScumLogDataManager:
 
     def get_log_file_hashes(self) -> dict:
         """get log file hash from database"""
-        retval= dict()
+        retval= {} 
         query = "SELECT * FROM log_hashes"
         repl = self.raw(query)
         for item in repl:
