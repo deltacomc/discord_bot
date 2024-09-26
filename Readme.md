@@ -4,9 +4,10 @@ preliminary readme
 
 ## Supported commands
 
-    * !online <user> - Returns if a user is online or not
-    * !lastseen <user> - Returns if a user is online or not and lasst seen time if offline
+    * !online <user> - Returns if a user is online or not. <user> is optional.
+    * !lastseen <user> - Returns if a user is online or not and lasst seen time if offline.
     * !bunkers <bunker> - Returns if bunker is active. <bunker> is optional.
+    * !lifetime <user> - Returns the lifetime of a player on the Server. <user> is optional.
 
 ## configure env-file
 ```
