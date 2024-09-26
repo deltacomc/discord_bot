@@ -196,6 +196,10 @@ async def log_parser_loop():
             elif "gameplay" in file_key:
                 await handle_bunkers(msgs, file_key, db)
 
+    if datetime.now().hour == 0 and datetime.now().minute == 0:
+        db.discard_old_logfiles(30*86400)
+    db.close()
+
 @log_parser_loop.error
 async def on_loop_error(error):
     """Error handler for the loop"""

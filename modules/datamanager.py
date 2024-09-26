@@ -110,9 +110,10 @@ class ScumLogDataManager:
         retval = int(s[0])*3600 + int(s[1])*60 + int(s[2])
         return retval
 
-
     def _discard_old_values(self, table, age_secs):
         age_timestamp = datetime.timestamp(datetime.now()) - age_secs
+        age_time = datetime.strftime(datetime.fromtimestamp(age_timestamp), "%d.%m.%Y %H:%M:%S")
+        self.logging.info(f"Discarding values older than {age_time} from Table {table}")
         statement = f"DELETE FROM {table} where timestamp < {age_timestamp}"
         cursor = self.db.cursor()
         cursor.execute(statement)
@@ -391,6 +392,13 @@ class ScumLogDataManager:
             age: int in seconds
         """
         self._discard_old_values("player", age)
+
+    def discard_old_logfiles(self, age: int) -> None:
+        """discard old log file hashes from table
+           Parameters:
+            age: int in seconds
+        """
+        self._discard_old_values("log_hashes", age)
 
     def raw(self, query: str) -> object:
         """raw sql query"""
