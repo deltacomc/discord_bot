@@ -107,7 +107,7 @@ def _convert_time(in_sec: int):
     minutes = int(seconds / 60)
     seconds = int(seconds % 60)
 
-    return f"{days}d {hours}:{minutes}:{seconds}"
+    return f"{days:02d}d {hours:02d}:{minutes:02d}:{seconds:02d}"
 
 async def send_debug_message(message):
     """Function will send debug messages"""
