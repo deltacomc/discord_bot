@@ -215,17 +215,18 @@ async def command_lifetime(ctx, player: str = None):
         logging.info(f"Get server lifetime for player {player}")
         player_stat = db.get_player_status(player)
         if len(player_stat) > 0:
-            lifetime = _convert_time(player_stat[0][player]["lifetime"])
+            lifetime = _convert_time(player_stat[0]["lifetime"])
             msg_str = f"Player {player} lives on server for {lifetime}."
         else:
             msg_str = f"Player {player} has no life on this server."
     else:
         logging.info("Getting all players that visited the server")
-        msg_str = "Not yet implemented to get all players."
-        # player_stat = db.get_player_status()
-        # msg_str = "Following players have a liftime on this server:\n"
-        # for p in player_stat:
-        #     msg_str += f"{p} lives for {player_stat[p]["liftime"]} sec on this server.\n"
+        # msg_str = "Not yet implemented to get all players."
+        player_stat = db.get_player_status()
+        msg_str = "Following players have a liftime on this server:\n"
+        for p in player_stat:
+            lifetime = _convert_time(p["lifetime"])
+            msg_str += f"{p['name']} lives for {lifetime} on this server.\n"
 
     await ctx.send(msg_str)
 
@@ -267,30 +268,43 @@ async def command_bunkers(ctx, bunker: str = None):
     await ctx.send(msg_str)
 
 @client.command(name='online')
-async def player_online(ctx, player: str):
+async def player_online(ctx, player: str = None):
     """Command to check if player is online"""
     message = ""
+    local_timezone = ZoneInfo('Europe/Berlin')
     logging.info(f"Get status for player {player}")
     db = ScumLogDataManager(DATABASE_FILE)
-    player_status = db.get_player_status(player)
+    if player:
+        player_status = db.get_player_status(player)
 
-    if len(player_status) == 0:
-        message = f"Error: Player {player} does not exists in Database"
-    else:
-        if len(player_status) > 1:
-            message = f"Multiple players with Name {player} found.\n"
-            for p in player_status:
-                if p[player]["status"] == 0:
+        if len(player_status) == 0:
+            message = f"Error: Player {player} does not exists in Database"
+        else:
+            if len(player_status) > 1:
+                message = f"Multiple players with Name {player} found.\n"
+                for p in player_status:
+                    if p["status"] == 0:
+                        state = "offline"
+                    else:
+                        state = "online"
+                    message += f"{player} is currently {p['status']}"
+            else:
+                if player_status[0]["status"] == 0:
                     state = "offline"
                 else:
                     state = "online"
-                message += f"{player} is currently {p[player]['status']}"
+                message = f"Player: {player} is currently {state}."
+    else:
+        player_status = db.get_player_status()
+        if len(player_status) > 0:
+            message = "Follwoing Players are online:\n"
+            for p in player_status:
+                if p["status"] == 1:
+                    login = datetime.fromtimestamp(p['login_timestamp'],
+                                                    local_timezone).strftime('%d.%m.%Y %H:%M:%S')
+                    message += f"{p['name']} is online since {login}\n"
         else:
-            if player_status[0][player]["status"] == 0:
-                state = "offline"
-            else:
-                state = "online"
-            message = f"Player: {player} is currently {state}."
+            message = "No players are online at the moment."
 
     await ctx.send(message)
 
@@ -309,18 +323,18 @@ async def player_lastseen(ctx, player: str):
         if len(player_status) > 1:
             message = f"Multiple players with Name {player} found.\n"
             for p in player_status:
-                if p[player]["status"] == 0:
+                if p["status"] == 0:
                     state = "offline"
-                    lasstseen = datetime.fromtimestamp(player_status[0][player]["logout_timestamp"],
+                    lasstseen = datetime.fromtimestamp(p["logout_timestamp"],
                                                        local_timezone).strftime('%d.%m.%Y %H:%M:%S')
                 else:
                     state = "online"
                     lasstseen = "now"
                 message += f"Player: {player} is currently {state} and was last seen {lasstseen}."
         else:
-            if player_status[0][player]["status"] == 0:
+            if player_status[0]["status"] == 0:
                 state = "offline"
-                lasstseen = datetime.fromtimestamp(player_status[0][player]["logout_timestamp"],
+                lasstseen = datetime.fromtimestamp(player_status[0]["logout_timestamp"],
                                                    local_timezone).strftime('%Y-%m-%d %H:%M:%S')
             else:
                 state = "online"
