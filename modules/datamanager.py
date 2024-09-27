@@ -361,7 +361,7 @@ class ScumLogDataManager:
             bunker_data = cursor.fetchall()
             if len(bunker_data) == 0:
                 retval = []
-            elif len(bunker_data) > 1:
+            else:
                 # 1, 1726252409, 'C1', 1, -393614.781, 216967.266, 59906.152, 0, 0
                 self.logging.info("Got all Bunker Data")
                 for p in bunker_data:
