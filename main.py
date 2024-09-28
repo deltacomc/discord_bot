@@ -186,11 +186,20 @@ async def handle_bunkers(msgs, file, dbconnection):
                     print(msg["active"] and bunker_data[0]['active'] == 0)
                     if msg["active"] and bunker_data[0]['active'] == 0:
                         msg_str = f"Bunker {msg['name']} was activated. "
-                        msg_str += f"[Coordinates @ X={msg['coordinates']['x']} "
-                        msg_str += f"Y={msg['coordinates']['y']} "
-                        msg_str += f"Z={msg['coordinates']['z']}]"
-                        msg_str += f"(https://scum-map.com/en/map/place/{msg['coordinates']['x']}"
-                        msg_str += f",{msg['coordinates']['y']},3)"
+                        if len(msg["coordinates"]) != 0:
+                            msg_str += f"[Coordinates @ X={msg['coordinates']['x']} "
+                            msg_str += f"Y={msg['coordinates']['y']} "
+                            msg_str += f"Z={msg['coordinates']['z']}]"
+                            msg_str += "(https://scum-map.com/en/map/place/"
+                            msg_str += f"{msg['coordinates']['x']}"
+                            msg_str += f",{msg['coordinates']['y']},3)"
+                        elif len(bunker_data[0]['coordinates']) != 0:
+                            msg_str += f"[Coordinates @ X={bunker_data[0]['coordinates']['x']} "
+                            msg_str += f"Y={bunker_data[0]['coordinates']['y']} "
+                            msg_str += f"Z={bunker_data[0]['coordinates']['z']}]"
+                            msg_str += "(https://scum-map.com/en/map/place/"
+                            msg_str += f"{bunker_data[0]['coordinates']['x']}"
+                            msg_str += f",{bunker_data[0]['coordinates']['y']},3)"
                         await channel.send(msg_str)
                     dbconnection.update_bunker_status(msg)
                     dbconnection.store_message_send(msg["hash"])
