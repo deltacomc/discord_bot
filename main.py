@@ -21,7 +21,7 @@ from discord.ext import tasks
 from dotenv import load_dotenv
 
 # pylint: disable=wrong-import-position
-#sys.path.append('./')
+# sys.path.append('./')
 from modules.datamanager import ScumLogDataManager
 from modules.logparser import LoginParser, KillParser, BunkerParser
 from modules.sftploader import ScumSFTPLogParser
@@ -178,12 +178,7 @@ async def handle_bunkers(msgs, file, dbconnection):
                     bunker_data = dbconnection.get_active_bunkers(msg['name'])
                     if len(bunker_data) == 0:
                         bunker_data.append({"active": 0})
-                    print(bunker_data)
-                    print(msg)
-                    print(msg["active"] and len(msg["since"]) > 0 and \
-                       len(msg["coordinates"]) > 0 and \
-                       len(msg["next"]) == 0 and bunker_data[0]['active'] == 0)
-                    print(msg["active"] and bunker_data[0]['active'] == 0)
+
                     if msg["active"] and bunker_data[0]['active'] == 0:
                         msg_str = f"Bunker {msg['name']} was activated. "
                         if len(msg["coordinates"]) != 0:
