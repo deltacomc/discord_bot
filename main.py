@@ -23,7 +23,7 @@ from dotenv import load_dotenv
 # pylint: disable=wrong-import-position
 # sys.path.append('./')
 from modules.datamanager import ScumLogDataManager
-from modules.logparser import LoginParser, KillParser, BunkerParser
+from modules.logparser import LoginParser, KillParser, BunkerParser, FamepointParser
 from modules.sftploader import ScumSFTPLogParser
 from modules.output import Output
 # pylint: enable=wrong-import-position
@@ -199,6 +199,19 @@ async def handle_bunkers(msgs, file, dbconnection):
                     dbconnection.update_bunker_status(msg)
                     dbconnection.store_message_send(msg["hash"])
 
+async def handle_fame(msgs, file, dbconnection):
+    """handle fame point events"""
+    channel = client.get_channel(int(LOG_FEED_CHANNEL))
+    fp = FamepointParser()
+    for m in msgs[file]:
+        if not isinstance(m,set):
+            for mm in str.split(m,"\n"):
+                msg = fp.parse(mm)
+                if msg and dbconnection.check_message_send(msg["hash"]):
+                    logging.debug(f"Player: {msg['name']} has {msg['points']} Points.")
+                    # TODO: store in database
+                    dbconnection.store_message_send(msg["hash"])
+                    
 @tasks.loop(seconds=LOG_CHECK_INTERVAL)
 async def log_parser_loop():
     """Loop to parse logfiles and handle outputs"""
@@ -213,6 +226,8 @@ async def log_parser_loop():
                 await handle_kills(msgs, file_key, db)
             elif "gameplay" in file_key:
                 await handle_bunkers(msgs, file_key, db)
+            elif "famepoints" in file_key:
+                await handle_fame(msgs, file_key, db)
 
     if datetime.now().hour == 0 and datetime.now().minute == 0:
         db.discard_old_logfiles(30*86400)

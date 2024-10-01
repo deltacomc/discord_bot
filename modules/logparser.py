@@ -244,4 +244,22 @@ class BunkerParser(Parser):
 
         return retval
 
+class FamepointParser(Parser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.log_regex = r"[A-Za-z]+\s([A-Za-z]+)\(([0-9]+)\)[\sa-zA-Z]+([0-9.]+).*$"
+        self.log_pattern = re.compile(self.log_regex)
+
+    def parse(self, string) -> dict:
+        result =  super().parse(string)
+        retval = {}
+        if result:
+            retval.update({
+                "name": result.group(1),
+                "steamid": result.group(2),
+                "points": result.group(3),
+                "hash": self._hash_string(string)
+            })
+
+        return retval
 # pylint: enable=line-too-long
