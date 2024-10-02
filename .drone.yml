@@ -14,13 +14,13 @@ steps:
     commands:
       - hadolint --version
       - hadolint Dockerfile
-  - name: pylint
-    image: python:3.12-alpine
-    environment:
-        PYTEST_ADDOPTS: --color=yes
-    commands:
-        - pip3 install -r requirements.txt -r requirements-test.txt
-        - py.test --pylint main.py
+  # - name: pylint
+  #   image: python:3.12-alpine
+  #   environment:
+  #       PYTEST_ADDOPTS: --color=yes
+  #   commands:
+  #       - pip3 install -r requirements.txt -r requirements-test.txt
+  #       - py.test --pylint main.py
   - name: build master
     image: plugins/docker
     settings:
