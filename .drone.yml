@@ -1,0 +1,74 @@
+---
+kind: pipeline
+type: docker
+name: scum_bot
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+  - name: hadolint
+    #image: hadolint/hadolint:latest-debian
+    image: "ghcr.io/hadolint/hadolint:latest-debian"
+    commands:
+      - hadolint --version
+      - hadolint Dockerfile
+  - name: pylint
+    image: python:3.12-alpine
+    environment:
+        PYTEST_ADDOPTS: --color=yes
+    commands:
+        - pip3 install -r requirements.txt -r requirements-test.txt
+        - py.test --pylint main.py
+  - name: build master
+    image: plugins/docker
+    settings:
+      repo: registry.nbg.bufanda.de/scum/discord_bot
+      registry: registry.nbg.bufanda.de
+      tags:
+        - debug
+      autotag: no
+      insecure: yes
+    when:
+      event:
+        - push
+  - name: build tag
+    image: plugins/docker
+    settings:
+      repo: registry.nbg.bufanda.de/scum/discord_bot
+      registry: registry.nbg.bufanda.de
+      autotag: yes
+      insecure: yes
+    when:
+      event:
+        - tag
+  - name: build release
+    image: plugins/docker
+    settings:
+      repo: registry.nbg.bufanda.de/scum/discord_bot
+      registry: registry.nbg.bufanda.de
+      autotag: no
+      insecure: yes
+      tags:
+        - latest
+    when:
+      event:
+        - promote
+      target:
+        - production
+  - name: notify
+    image: drillster/drone-email
+    settings:
+      from.address: it@bufanda.de
+      from.name: Drone (drone.nbg.bufanda.de)
+      host: smtp.1und1.de
+      username: it@bufanda.de
+      password:
+        from_secret: drone_email_password
+      recipients:
+        - it@bufanda.de
+      recipients_only: true
+    when:
+      status:
+        - failure
