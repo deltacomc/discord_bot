@@ -8,13 +8,12 @@ FROM python:3.12-alpine
 
 RUN mkdir /app
 
-ADD requirements.txt /app
-ADD main.py /app
-ADD modules/ /app/modules
+COPY requirements.txt main.py /app/
+COPY modules/ /app/modules
 
 WORKDIR /app
 
-RUN python -m pip install -r requirements.txt 
+RUN python -m pip install --no-cache-dir -r requirements.txt 
 
 ENV PYTHONPATH=/app
 CMD ["python", "-u", "./main.py"]
