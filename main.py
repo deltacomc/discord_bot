@@ -44,6 +44,11 @@ DATABASE_FILE = os.getenv("DATABASE_FILE")
 LOG_CHECK_INTERVAL = os.getenv("LOG_CHECK_INTERVAL")
 HELP_COMMAND = os.getenv("BOT_HELP_COMMAND")
 
+CONFIG_ADMIN_ROLE = os.getenv("BOT_USER_ADMIN_ROLE")
+
+if CONFIG_ADMIN_ROLE is None:
+    CONFIG_ADMIN_ROLE = 'admin'
+
 if LOG_CHECK_INTERVAL is None:
     LOG_CHECK_INTERVAL = 60.0
 else:
@@ -56,9 +61,14 @@ WEAPON_LOOKUP = {
     "Compound_Bow_C": "compund bow"
 }
 
-config = {
-    "reply": "same_channel"
+DEFAULT_CONFIG = {
+    "reply": "same_channel",
+    "publish_login": True,
+    "publish_bunkers": True,
+    "publish_kills": True
 }
+
+config = DEFAULT_CONFIG
 intents = discord.Intents.default()
 intents.message_content = True
 
@@ -90,9 +100,31 @@ async def on_ready():
                            user=SFTP_USER, logdirectoy=LOG_DIRECTORY,
                            database=DATABASE_FILE, debug_callback=None)
 
+    _load_config()
+
     # Start the loop that checks log files periodically
     if not log_parser_loop.is_running():
         log_parser_loop.start()
+
+def _load_config() -> None:
+    global config
+    init = False
+    db = ScumLogDataManager(DATABASE_FILE)
+    _config = db.load_config()
+    if len(_config) == 0:
+        init = True
+    if "reply" not in _config:
+        _config.update({"reply": DEFAULT_CONFIG['reply']})
+    if "publish_login" not in _config:
+        _config.update({"publish_login": DEFAULT_CONFIG['publish_login']})
+    if "publish_bunkers" not in _config:
+        _config.update({"publish_bunkers": DEFAULT_CONFIG['publish_bunkers']})
+    if "publish_kills" not in _config:
+        _config.update({"publish_kills": DEFAULT_CONFIG['publish_kills']})
+
+    config = _config
+    if init:
+        db.save_config(config)
 
 def _convert_time(in_sec: int):
     days = 0
@@ -110,6 +142,12 @@ def _convert_time(in_sec: int):
     seconds = int(seconds % 60)
 
     return f"{days:02d}d {hours:02d}:{minutes:02d}:{seconds:02d}"
+
+async def _reply(context, msg) -> None:
+    if config["reply"] == "same_channel":
+        await context.reply(msg)
+    else:
+        await context.author.send(msg)
 
 async def send_debug_message(message):
     """Function will send debug messages"""
@@ -135,7 +173,8 @@ async def handle_login(msgs, file, dbconnection):
                         msg_str += f"Y={msg['coordinates']['y']} Z={msg['coordinates']['z']}]"
                         msg_str += f"(https://scum-map.com/en/map/place/{msg['coordinates']['x']}"
                         msg_str += f",{msg['coordinates']['y']},3)"
-                        await channel.send(msg_str)
+                        if config["publish_login"]:
+                            await channel.send(msg_str)
 
                 if msg and dbconnection.check_message_send(msg["hash"]):
                     if not msg['drone'] and player_data[0]['drone']:
@@ -171,7 +210,8 @@ async def handle_kills(msgs, file, dbconnection):
                     msg_str += f"and killed {msg['event']['Victim']['ProfileName']} "
                     msg_str += f"with a {weapon}."
 
-                    await channel.send(msg_str)
+                    if config["publish_kills"]:
+                        await channel.send(msg_str)
                     dbconnection.store_message_send(msg["hash"])
 
 async def handle_bunkers(msgs, file, dbconnection):
@@ -206,14 +246,16 @@ async def handle_bunkers(msgs, file, dbconnection):
                             msg_str += f"{bunker_data[0]['coordinates']['x']}"
                             msg_str += f",{bunker_data[0]['coordinates']['y']},3)"
                         else:
-                            msg_str += f"Bunker coordinates unkown, it wasnt't discovered previously."
-                        await channel.send(msg_str)
+                            msg_str += "Bunker coordinates unkown, "
+                            msg_str += "it wasnt't discovered previously."
+                        if config["publish_bunkers"]:
+                            await channel.send(msg_str)
                     dbconnection.update_bunker_status(msg)
                     dbconnection.store_message_send(msg["hash"])
 
 async def handle_fame(msgs, file, dbconnection):
     """handle fame point events"""
-    channel = client.get_channel(int(LOG_FEED_CHANNEL))
+    # channel = client.get_channel(int(LOG_FEED_CHANNEL))
     fp = FamepointParser()
     for m in msgs[file]:
         if not isinstance(m,set):
@@ -257,13 +299,18 @@ async def on_loop_error(error):
         pass
 
 @client.command(name="config")
-@commands.has_role('admin')
+@commands.has_role(CONFIG_ADMIN_ROLE)
 async def command_config(ctx, *args):
     """configure some settings on the bot"""
     db = ScumLogDataManager(DATABASE_FILE)
     if len(args) <= 0:
-        await ctx.send("Missing arguments.")
+        msg = "Current config:\n"
+        for cfg in config.items():
+            msg += f"{cfg[0]}: {cfg[1]}\n"
+        # await ctx.reply(msg)
+        await ctx.author.send(msg)
         return
+
     if args[0] == "reply":
         if len(args) < 2:
             await ctx.send("Missing arguments.")
@@ -272,7 +319,40 @@ async def command_config(ctx, *args):
                 config.update({"reply": "private"})
             else:
                 config.update({"reply": "same_channel"})
-            db.save_config(config)
+
+    if args[0] == "publish_login":
+        if len(args) < 2:
+            await ctx.send("Missing arguments.")
+        else:
+            if args[1].lower() == "true" or args[1] == "1":
+                config.update({"publish_login": True})
+            else:
+                config.update({"publish_login": False})
+
+    if args[0] == "publish_bunkers":
+        if len(args) < 2:
+            await ctx.send("Missing arguments.")
+        else:
+            if args[1].lower() == "true" or args[1] == "1":
+                config.update({"publish_bunkers": True})
+            else:
+                config.update({"publish_bunkers": False})
+
+    if args[0] == "publish_kills":
+        if len(args) < 2:
+            await ctx.send("Missing arguments.")
+        else:
+            if args[1].lower() == "true" or args[1] == "1":
+                config.update({"publish_kills": True})
+            else:
+                config.update({"publish_kills": False})
+
+    logging.info(f"Updated config: {args[0]} = {config[args[0]]}")
+
+    # await ctx.reply(f"Saved config: {args[0]} = {config[args[0]]}")
+    await ctx.author.send(f"Saved config: {args[0]} = {config[args[0]]}")
+    db.save_config(config)
+
 
 @client.command(name="lifetime")
 async def command_lifetime(ctx, player: str = None):
@@ -296,7 +376,7 @@ async def command_lifetime(ctx, player: str = None):
             lifetime = _convert_time(p["lifetime"])
             msg_str += f"{p['name']} lives for {lifetime} on this server.\n"
 
-    await ctx.send(msg_str)
+    await _reply(ctx, msg_str)
     db.close()
 
 @client.command(name='bunkers')
@@ -338,7 +418,7 @@ async def command_bunkers(ctx, bunker: str = None):
         else:
             msg_str = "No active bunkers found."
 
-    await ctx.send(msg_str)
+    await _reply(ctx, msg_str)
     db.close()
 
 @client.command(name='online')
@@ -380,7 +460,7 @@ async def player_online(ctx, player: str = None):
         else:
             message = "No players are online at the moment."
 
-    await ctx.send(message)
+    await _reply(ctx, message)
     db.close()
 
 @client.command(name='lastseen')
@@ -417,7 +497,7 @@ async def player_lastseen(ctx, player: str):
 
             message = f"Player: {player} is currently {state} and was last seen {lasstseen}."
 
-    await ctx.send(message)
+    await _reply(ctx, message)
     db.close()
 
 @client.command(name=HELP_COMMAND)
@@ -426,28 +506,28 @@ async def bot_help(ctx):
     msg_str = f"Hi, {ctx.author}. My Name is {client.user}.\n"
     msg_str += "You can call me with following commands:\n"
 
-    await ctx.send(msg_str)
+    await _reply(ctx, msg_str)
 
     msg_str = "!online <player name> - I will tell you if the"
     msg_str += "player with <name> is online on the SCUM server\n"
 
-    await ctx.send(msg_str)
+    await _reply(ctx, msg_str)
 
     msg_str = "!lastseen <player name> - I will tell you when I have seen <playername>"
     msg_str += "on the SCUM Server\n"
 
-    await ctx.send(msg_str)
+    await _reply(ctx, msg_str)
 
     msg_str = "!bunkers <bunker name> - I will tell you if the <bunker name> is active.\n"
     msg_str += "But the <bunker name> is optional. Without I unveil the secret and give"
     msg_str += " you all active bunkers."
 
-    await ctx.send(msg_str)
+    await _reply(ctx, msg_str)
 
     msg_str = "I will also report bunker openening, kills and players joining to and disconnecting "
     msg_str += "from the SCUM Server."
 
-    await ctx.send(msg_str)
+    await _reply(ctx, msg_str)
 
 @client.command(name='99')
 async def nine_nine(ctx):
@@ -462,7 +542,7 @@ async def nine_nine(ctx):
     ]
 
     response = random.choice(brooklyn_99_quotes)
-    await ctx.send(response)
+    await _reply(ctx, response)
 
 @client.command(name='\\/')
 async def spock(ctx):
@@ -477,7 +557,7 @@ async def spock(ctx):
     ]
 
     response = random.choice(star_trek_quotes)
-    await ctx.send(response)
+    await _reply(ctx, response)
 
 @client.command(name='roll_dice', help='Simulates rolling dice.')
 async def roll(ctx, number_of_dice: int, number_of_sides: int):
@@ -486,7 +566,7 @@ async def roll(ctx, number_of_dice: int, number_of_sides: int):
         str(random.choice(range(1, number_of_sides + 1)))
         for _ in range(number_of_dice)
     ]
-    await ctx.send(', '.join(dice))
+    await _reply(ctx, ', '.join(dice))
 
 @client.command(name='create-channel')
 @commands.has_role('admin')

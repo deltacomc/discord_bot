@@ -420,7 +420,7 @@ class ScumLogDataManager:
         """
         self._discard_old_values("log_hashes", age)
 
-    def raw(self, query: str) -> object:
+    def raw(self, query: str) -> list[any]:
         """raw sql query"""
         cursor = self.db.cursor()
         ret = cursor.execute(query)
@@ -449,18 +449,27 @@ class ScumLogDataManager:
 
     def save_config(self, config: dict):
         """Save config in database"""
-        query = "SELECT config_key FROM config"
+        query = "SELECT * FROM config"
         reply = self.raw(query)
+        db_config = {}
+        for r in reply:
+            db_config.update({r[0]: r[1]})
         for key in config:
             value = config[key]
-            if key not in reply:
-                query = "INSERT INTO config (config_key, config_parameter)"
-                query += f"VALUES ({key}, {value})"
+            if key not in db_config:
+                query = "INSERT INTO config (config_key, config_parameter) "
+                query += f"VALUES ('{key}', '{value}')"
             else:
-                query = "UPDATE config SET config_parameter = "
-                query += f"'{value}' WHERE config_key = '{key}'"
-            self.raw(query)
-            self.db.commit()
+                if db_config[key] != str(value):
+                    query = "UPDATE config SET config_parameter = "
+                    query += f"'{value}' WHERE config_key = '{key}'"
+                else:
+                    # nothing to update
+                    query = ""
+
+            if query:
+                self.raw(query)
+                self.db.commit()
 
     def load_config(self) -> dict:
         """Save config in database"""
