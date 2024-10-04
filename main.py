@@ -196,7 +196,7 @@ async def handle_bunkers(msgs, file, dbconnection):
                             msg_str += f"{bunker_data[0]['coordinates']['x']}"
                             msg_str += f",{bunker_data[0]['coordinates']['y']},3)"
                         else:
-                            msg_str += f"Bunker coordinates unkown."
+                            msg_str += f"Bunker coordinates unkown, it wasnt't discovered previously."
                         await channel.send(msg_str)
                     dbconnection.update_bunker_status(msg)
                     dbconnection.store_message_send(msg["hash"])
