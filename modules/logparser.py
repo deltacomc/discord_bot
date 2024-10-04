@@ -29,7 +29,7 @@ class LoginParser(Parser):
     def __init__(self) -> None:
         # super().__init__()
         # pylint: disable=line-too-long
-        self.log_regex = r"^([0-9.-]*):\s'([0-9.]*)\s([0-9]*):(.+)\([0-9]+\)'\slogged ([in|out]+)\sat:\sX=([0-9.-]*)\sY=([0-9.-]*)\sZ=([0-9.-]*)"
+        self.log_regex = r"^([0-9.-]*):\s'([0-9.]*)\s([0-9]*):(.+)\([0-9]+\)'\slogged ([in|out]+)\sat:\sX=([0-9.-]*)\sY=([0-9.-]*)\sZ=([0-9.-]*)$"
         self.log_pattern = re.compile(self.log_regex)
         # pylint: enable=line-too-long
 
@@ -37,6 +37,8 @@ class LoginParser(Parser):
         """implementation of the parser method for login log file type"""
         ret_val = {}
         result = super().parse(string)
+        if "drone" in string:
+            print(f"User logged in as drone. Ignoring message.")
         if result is not None:
             ret_val = {
                 "timestamp" : result.group(1),

@@ -211,7 +211,7 @@ class ScumLogDataManager:
         bunker_data = cursor.fetchall()
         statement = None
         if len(bunker_data) == 0:
-            self.logging.info("Bunker not in Database")
+            self.logging.info(f"Bunker {bunker['name']} not in Database")
             if len(bunker["coordinates"]) != 0 and len(bunker["next"]) == 0 and bunker["active"]:
                 statement = "INSERT INTO bunkers (name, timestamp, active, since, next,"
                 statement += "coordinates_x, coordinates_y, coordinates_z) VALUES "

@@ -188,13 +188,15 @@ async def handle_bunkers(msgs, file, dbconnection):
                             msg_str += "(https://scum-map.com/en/map/place/"
                             msg_str += f"{msg['coordinates']['x']}"
                             msg_str += f",{msg['coordinates']['y']},3)"
-                        elif len(bunker_data[0]['coordinates']) != 0:
+                        elif 'coordinates' in bunker_data[0]:
                             msg_str += f"Coordinates @ [X={bunker_data[0]['coordinates']['x']} "
                             msg_str += f"Y={bunker_data[0]['coordinates']['y']} "
                             msg_str += f"Z={bunker_data[0]['coordinates']['z']}]"
                             msg_str += "(https://scum-map.com/en/map/place/"
                             msg_str += f"{bunker_data[0]['coordinates']['x']}"
                             msg_str += f",{bunker_data[0]['coordinates']['y']},3)"
+                        else:
+                            msg_str += f"Bunker coordinates unkown."
                         await channel.send(msg_str)
                     dbconnection.update_bunker_status(msg)
                     dbconnection.store_message_send(msg["hash"])
