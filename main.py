@@ -63,9 +63,9 @@ WEAPON_LOOKUP = {
 
 DEFAULT_CONFIG = {
     "reply": "same_channel",
-    "publish_login": True,
-    "publish_bunkers": True,
-    "publish_kills": True
+    "publish_login": False,
+    "publish_bunkers": False,
+    "publish_kills": False
 }
 
 config = DEFAULT_CONFIG
