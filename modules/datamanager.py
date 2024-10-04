@@ -10,7 +10,7 @@ import sqlite3
 from datetime import datetime
 from modules.output import Output
 
-SCHEMA_VERSION = 103
+SCHEMA_VERSION = 104
 
 class ScumLogDataManager:
     """Manage Database access for bot"""
@@ -69,12 +69,24 @@ class ScumLogDataManager:
             cursor.execute(add_column)
             self.db.commit()
 
+        check_column = "SELECT COUNT(*) AS CNTREC FROM "
+        check_column += "pragma_table_info('player') WHERE name='drone'"
+        cursor = self.db.cursor()
+        cursor.execute(check_column)
+        result = cursor.fetchone()
+        if result[0] == 0:
+        # update table
+            add_column = "ALTER TABLE player "
+            add_column += "ADD drone BOOL DEFAULT 0"
+            cursor.execute(add_column)
+            self.db.commit()
+
     def _init_schema(self):
         cursor = self.db.cursor()
         ## Table does not exists so we create out tables
         cursor.execute("CREATE TABLE IF NOT EXISTS player (id INTEGER PRIMARY KEY, timestamp INTEGER, steamid INTEGER,\
                        username TEXT, loggedin BOOL, coordinates_x REAL, coordinates_y REAL, coordinates_z REAL, \
-                       login_timestamp INTEGER, logout_timestamp INTEGER, server_lifetime INTEGER)")
+                       login_timestamp INTEGER, logout_timestamp INTEGER, server_lifetime INTEGER, drone BOOL)")
 
         cursor.execute("CREATE TABLE IF NOT EXISTS bunkers (id INTEGER PRIMARY KEY, timestamp INTEGER, \
                        name TEXT, active BOOL, coordinates_x REAL, coordinates_y REAL, coordinates_z REAL, \
@@ -83,6 +95,8 @@ class ScumLogDataManager:
         cursor.execute("CREATE TABLE IF NOT EXISTS message_send (hash TEXT PRIMARY KEY, timestamp REAL)")
 
         cursor.execute("CREATE TABLE IF NOT EXISTS log_hashes (timestamp REAL, hash TEXT PRIMARY KEY, file TEXT)")
+
+        cursor.execute("CREATE TABLE IF NOT EXISTS config (config_key TEXT PRIMARY KEY, config_parameter TEXT)")
 
         cursor.execute("CREATE TABLE IF NOT EXISTS scum_schema (name TEXT, schema_version INTEGER PRIMARY KEY)")
 
@@ -164,10 +178,10 @@ class ScumLogDataManager:
                 loggedout_timestamp = self._get_timestamp(player['timestamp'])
 
             cursor.execute(f"INSERT INTO player (timestamp, steamid, username, loggedin, coordinates_x, \
-                           coordinates_y, coordinates_z, login_timestamp, logout_timestamp, server_lifetime) \
+                           coordinates_y, coordinates_z, login_timestamp, logout_timestamp, server_lifetime, drone) \
                            VALUES ({self._get_timestamp(player['timestamp'])}, {player['steamID']}, '{player['username']}', \
                            {state}, {player['coordinates']['x']}, {player['coordinates']['y']}, {player['coordinates']['z']}, \
-                           {loggedin_timestamp}, {loggedout_timestamp}, 0)")
+                           {loggedin_timestamp}, {loggedout_timestamp}, 0, {player['drone']})")
             self.db.commit()
             return True
         else:
@@ -180,14 +194,15 @@ class ScumLogDataManager:
                                coordinates_x = {player['coordinates']['x']}, \
                                coordinates_y = {player['coordinates']['y']}, \
                                coordinates_z = {player['coordinates']['z']}, \
-                               login_timestamp = {loggedin_timestamp} \
+                               login_timestamp = {loggedin_timestamp}, \
+                               drone = {player['drone']} \
                                WHERE steamid == '{player['steamID']}'")
 
             else:
                 state = False
                 login_ts = player_data[0][8]
                 loggedout_timestamp = self._get_timestamp(player['timestamp'])
-                if login_ts > 0 and login_ts < loggedout_timestamp:
+                if login_ts > 0 and login_ts < loggedout_timestamp and not player['drone']:
                     server_lifetime = loggedout_timestamp - login_ts
                     server_lifetime_all = server_lifetime + player_data[0][10]
                 else:
@@ -199,7 +214,8 @@ class ScumLogDataManager:
                                coordinates_y = {player['coordinates']['y']}, \
                                coordinates_z ={player['coordinates']['z']}, \
                                logout_timestamp = {loggedout_timestamp}, \
-                               server_lifetime = {server_lifetime_all} \
+                               server_lifetime = {server_lifetime_all}, \
+                               drone = {player['drone']} \
                                WHERE steamid == '{player['steamID']}'")
             self.db.commit()
             return True
@@ -303,7 +319,8 @@ class ScumLogDataManager:
                                "status": p[4],
                                "login_timestamp" : p[8],
                                "logout_timestamp" : p[9],
-                               "lifetime": p[10]
+                               "lifetime": p[10],
+                               "drone": p[11]
                                })
         else:
             self.logging.info("One Player found.")
@@ -311,7 +328,8 @@ class ScumLogDataManager:
                 "status": player_data[0][4],
                 "login_timestamp" : player_data[0][8],
                 "logout_timestamp" : player_data[0][9],
-                "lifetime": player_data[0][10]
+                "lifetime": player_data[0][10],
+                "drone": player_data[0][11]
                 })
 
         return ret_val
@@ -419,11 +437,36 @@ class ScumLogDataManager:
 
     def get_log_file_hashes(self) -> dict:
         """get log file hash from database"""
-        retval= {} 
+        retval= {}
         query = "SELECT * FROM log_hashes"
         repl = self.raw(query)
         for item in repl:
             retval.update({item[1]: item[2]})
+
+        return retval
+
+    def save_config(self, config: dict):
+        """Save config in database"""
+        query = "SELECT config_key FROM config"
+        reply = self.raw(query)
+        for key in config:
+            value = config[key]
+            if key not in reply:
+                query = "INSERT INTO config (config_key, config_parameter)"
+                query += f"VALUES ({key}, {value})"
+            else:
+                query = "UPDATE config SET config_parameter = "
+                query += f"'{value}' WHERE config_key = '{key}'"
+            self.raw(query)
+            self.db.commit()
+
+    def load_config(self) -> dict:
+        """Save config in database"""
+        query = "SELECT * FROM config"
+        reply = self.raw(query)
+        retval = {}
+        for item in reply:
+            retval.update({item[0]: item[1]})
 
         return retval
 

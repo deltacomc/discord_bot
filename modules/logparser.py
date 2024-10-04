@@ -29,16 +29,17 @@ class LoginParser(Parser):
     def __init__(self) -> None:
         # super().__init__()
         # pylint: disable=line-too-long
-        self.log_regex = r"^([0-9.-]*):\s'([0-9.]*)\s([0-9]*):(.+)\([0-9]+\)'\slogged ([in|out]+)\sat:\sX=([0-9.-]*)\sY=([0-9.-]*)\sZ=([0-9.-]*)$"
+        self.log_regex = r"^([0-9.-]*):\s'([0-9.]*)\s([0-9]*):(.+)\([0-9]+\)'\slogged ([in|out]+)\sat:\sX=([0-9.-]*)\sY=([0-9.-]*)\sZ=([0-9.-]*)"
         self.log_pattern = re.compile(self.log_regex)
         # pylint: enable=line-too-long
 
     def parse(self, string) -> dict:
         """implementation of the parser method for login log file type"""
         ret_val = {}
+        drone = False
         result = super().parse(string)
         if "drone" in string:
-            print(f"User logged in as drone. Ignoring message.")
+            drone = True
         if result is not None:
             ret_val = {
                 "timestamp" : result.group(1),
@@ -51,6 +52,7 @@ class LoginParser(Parser):
                     "y" : result.group(7),
                     "z" : result.group(8),
                 },
+                "drone": drone,
                 "hash": self._hash_string(string)
             }
         return ret_val
@@ -247,6 +249,7 @@ class BunkerParser(Parser):
         return retval
 
 class FamepointParser(Parser):
+    """Parse famepoints log"""
     def __init__(self) -> None:
         super().__init__()
         self.log_regex = r"[A-Za-z]+\s([A-Za-z]+)\(([0-9]+)\)[\sa-zA-Z]+([0-9.]+).*$"

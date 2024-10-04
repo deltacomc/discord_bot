@@ -57,6 +57,9 @@ WEAPON_LOOKUP = {
     "Compound_Bow_C": "compund bow"
 }
 
+config = {
+    "reply": "same_channel"
+}
 intents = discord.Intents.default()
 intents.message_content = True
 
@@ -123,13 +126,21 @@ async def handle_login(msgs, file, dbconnection):
             for mm in str.split(m,"\n"):
                 msg = p.parse(mm)
                 if msg and dbconnection.check_message_send(msg["hash"]):
+                    player_data = dbconnection.get_player_status(msg["username"])
+                    if len(player_data) == 0:
+                        player_data.append({'drone': False})
+                    print(player_data)
+                    print(msg)
+                    if not msg['drone'] and not player_data[0]['drone']:
                     # pylint: disable=line-too-long
-                    msg_str = f"Player: {msg['username']}, logged "
-                    msg_str += f"{msg['state']} @ [X={msg['coordinates']['x']} "
-                    msg_str += f"Y={msg['coordinates']['y']} Z={msg['coordinates']['z']}]"
-                    msg_str += f"(https://scum-map.com/en/map/place/{msg['coordinates']['x']}"
-                    msg_str += f",{msg['coordinates']['y']},3)"
-                    await channel.send(msg_str)
+                        msg_str = f"Player: {msg['username']}, logged "
+                        msg_str += f"{msg['state']} @ [X={msg['coordinates']['x']} "
+                        msg_str += f"Y={msg['coordinates']['y']} Z={msg['coordinates']['z']}]"
+                        msg_str += f"(https://scum-map.com/en/map/place/{msg['coordinates']['x']}"
+                        msg_str += f",{msg['coordinates']['y']},3)"
+                        await channel.send(msg_str)
+
+                if msg and dbconnection.check_message_send(msg["hash"]):
                     dbconnection.store_message_send(msg["hash"])
                     dbconnection.update_player(msg)
                     # pylint: enable=line-too-long
@@ -213,7 +224,7 @@ async def handle_fame(msgs, file, dbconnection):
                     logging.debug(f"Player: {msg['name']} has {msg['points']} Points.")
                     # TODO: store in database
                     dbconnection.store_message_send(msg["hash"])
-                    
+
 @tasks.loop(seconds=LOG_CHECK_INTERVAL)
 async def log_parser_loop():
     """Loop to parse logfiles and handle outputs"""
@@ -245,6 +256,24 @@ async def on_loop_error(error):
         log_parser_loop.restart()
     else:
         pass
+
+@client.command(name="config")
+@commands.has_role('admin')
+async def command_config(ctx, *args):
+    """configure some settings on the bot"""
+    db = ScumLogDataManager(DATABASE_FILE)
+    if len(args) <= 0:
+        await ctx.send("Missing arguments.")
+        return
+    if args[0] == "reply":
+        if len(args) < 2:
+            await ctx.send("Missing arguments.")
+        else:
+            if args[1] == "private":
+                config.update({"reply": "private"})
+            else:
+                config.update({"reply": "same_channel"})
+            db.save_config(config)
 
 @client.command(name="lifetime")
 async def command_lifetime(ctx, player: str = None):
@@ -450,7 +479,6 @@ async def spock(ctx):
 
     response = random.choice(star_trek_quotes)
     await ctx.send(response)
-
 
 @client.command(name='roll_dice', help='Simulates rolling dice.')
 async def roll(ctx, number_of_dice: int, number_of_sides: int):
