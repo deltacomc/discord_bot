@@ -129,8 +129,6 @@ async def handle_login(msgs, file, dbconnection):
                     player_data = dbconnection.get_player_status(msg["username"])
                     if len(player_data) == 0:
                         player_data.append({'drone': False})
-                    print(player_data)
-                    print(msg)
                     if not msg['drone'] and not player_data[0]['drone']:
                     # pylint: disable=line-too-long
                         msg_str = f"Player: {msg['username']}, logged "
@@ -141,6 +139,8 @@ async def handle_login(msgs, file, dbconnection):
                         await channel.send(msg_str)
 
                 if msg and dbconnection.check_message_send(msg["hash"]):
+                    if not msg['drone'] and player_data[0]['drone']:
+                        msg['drone'] = True
                     dbconnection.store_message_send(msg["hash"])
                     dbconnection.update_player(msg)
                     # pylint: enable=line-too-long

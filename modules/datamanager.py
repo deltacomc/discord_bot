@@ -201,8 +201,10 @@ class ScumLogDataManager:
             else:
                 state = False
                 login_ts = player_data[0][8]
+                was_drone = player['drone']
+                player['drone'] = False
                 loggedout_timestamp = self._get_timestamp(player['timestamp'])
-                if login_ts > 0 and login_ts < loggedout_timestamp and not player['drone']:
+                if login_ts > 0 and login_ts < loggedout_timestamp and not was_drone:
                     server_lifetime = loggedout_timestamp - login_ts
                     server_lifetime_all = server_lifetime + player_data[0][10]
                 else:
