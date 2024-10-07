@@ -451,7 +451,7 @@ async def player_online(ctx, player: str = None):
     else:
         player_status = db.get_player_status()
         if len(player_status) > 0:
-            message = "Follwoing Players are online:\n"
+            message = "Following Players are online:\n"
             for p in player_status:
                 if p["status"] == 1:
                     login = datetime.fromtimestamp(p['login_timestamp'],
