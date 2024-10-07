@@ -267,4 +267,29 @@ class FamepointParser(Parser):
             })
 
         return retval
+    
+class AdminParser(Parser):
+    """parse the admin log"""
+
+    def __init__(self) -> None:
+        # super().__init__()
+        # pylint: disable=line-too-long
+        self.log_regex = r"^([0-9.-]*):\s'([0-9]*):(.+)\([0-9]+\)'\s(.+):\s(.*)$"
+        self.log_pattern = re.compile(self.log_regex)
+        # pylint: enable=line-too-long
+
+    def parse(self, string) -> dict:
+        result = super().parse(string)
+        retval = {}
+        if result:
+            retval.update({
+                "time": result.group(1),
+                "steamid": result.group(2),
+                "name": result.group(3),
+                "type": result.group(4),
+                "action": result.group(5)
+            })
+        
+        return retval
+
 # pylint: enable=line-too-long

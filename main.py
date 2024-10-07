@@ -23,7 +23,8 @@ from dotenv import load_dotenv
 # pylint: disable=wrong-import-position
 # sys.path.append('./')
 from modules.datamanager import ScumLogDataManager
-from modules.logparser import LoginParser, KillParser, BunkerParser, FamepointParser
+from modules.logparser import LoginParser, KillParser, BunkerParser, FamepointParser, \
+    AdminParser
 from modules.sftploader import ScumSFTPLogParser
 from modules.output import Output
 # pylint: enable=wrong-import-position
@@ -47,7 +48,7 @@ HELP_COMMAND = os.getenv("BOT_HELP_COMMAND")
 CONFIG_ADMIN_ROLE = os.getenv("BOT_USER_ADMIN_ROLE")
 
 if CONFIG_ADMIN_ROLE is None:
-    CONFIG_ADMIN_ROLE = 'admin'
+    CONFIG_ADMIN_ROLE = 'sbot_admin'
 
 if LOG_CHECK_INTERVAL is None:
     LOG_CHECK_INTERVAL = 60.0
@@ -266,6 +267,19 @@ async def handle_fame(msgs, file, dbconnection):
                     # TODO: store in database
                     dbconnection.store_message_send(msg["hash"])
 
+async def handle_admin_log(msgs, file, dbconnection):
+    """handle admin log events"""
+    # channel = client.get_channel(int(LOG_FEED_CHANNEL))
+    fp = AdminParser()
+    for m in msgs[file]:
+        if not isinstance(m,set):
+            for mm in str.split(m,"\n"):
+                msg = fp.parse(mm)
+                if msg and dbconnection.check_message_send(msg["hash"]):
+                    logging.debug(f"Admin: {msg['name']} has called a type {msg['type']} command.")
+                    dbconnection.store_message_send(msg["hash"])
+                    dbconnection.update_admin_audit(msg)
+
 @tasks.loop(seconds=LOG_CHECK_INTERVAL)
 async def log_parser_loop():
     """Loop to parse logfiles and handle outputs"""
@@ -282,6 +296,8 @@ async def log_parser_loop():
                 await handle_bunkers(msgs, file_key, db)
             elif "famepoints" in file_key:
                 await handle_fame(msgs, file_key, db)
+            elif "admin" in file_key:
+                await handle_admin_log(msgs, file_key, db)
 
     if datetime.now().hour == 0 and datetime.now().minute == 0:
         db.discard_old_logfiles(30*86400)

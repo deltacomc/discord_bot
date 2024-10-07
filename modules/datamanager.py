@@ -10,7 +10,7 @@ import sqlite3
 from datetime import datetime
 from modules.output import Output
 
-SCHEMA_VERSION = 104
+SCHEMA_VERSION = 105
 
 class ScumLogDataManager:
     """Manage Database access for bot"""
@@ -91,6 +91,9 @@ class ScumLogDataManager:
         cursor.execute("CREATE TABLE IF NOT EXISTS bunkers (id INTEGER PRIMARY KEY, timestamp INTEGER, \
                        name TEXT, active BOOL, coordinates_x REAL, coordinates_y REAL, coordinates_z REAL, \
                        since INTEGER, next INTEGER)")
+
+        cursor.execute("CREATE TABLE IF NOT EXISTS admin_audit (id INTEGER PRIMARY KEY, timestamp INTEGER, \
+                       name TEXT, steamid INTEGER, type TEXT, action TEXT)")
 
         cursor.execute("CREATE TABLE IF NOT EXISTS message_send (hash TEXT PRIMARY KEY, timestamp REAL)")
 
@@ -479,6 +482,26 @@ class ScumLogDataManager:
         for item in reply:
             retval.update({item[0]: item[1]})
 
+        return retval
+
+    def update_admin_audit(self, audit_data: dict) -> None:
+        """store data in table admin_audit"""
+        audit_timestamp = self._get_timestamp(audit_data["time"])
+        query = "INSERT INTO admin_audit "
+        query += "(timestamp, steamid, name, type, action)"
+        query += f"VALUES ({audit_timestamp}, {audit_data['steamid']}, "
+        query += f"{audit_data['name']}, {audit_data['type']}, {audit_data['action']}"
+        query += ")"
+        self.raw(query)
+        self.db.commit()
+
+    def get_admin_audit(self, by: str = None, value: str = None) -> list:
+        retval = []
+        if by is None and value is None:
+            query = "SELECT timestamp, steamid, name, type, action from admin_audit"
+            result = self.raw(query)
+            retval = result
+            
         return retval
 
     def close(self) -> None:
