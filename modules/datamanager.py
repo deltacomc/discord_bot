@@ -486,12 +486,14 @@ class ScumLogDataManager:
 
     def update_admin_audit(self, audit_data: dict) -> None:
         """store data in table admin_audit"""
+        audit_data.update({'action': audit_data['action'].replace("'", "")})
         audit_timestamp = self._get_timestamp(audit_data["time"])
         query = "INSERT INTO admin_audit "
-        query += "(timestamp, steamid, name, type, action)"
+        query += "(timestamp, steamid, name, type, action) "
         query += f"VALUES ({audit_timestamp}, {audit_data['steamid']}, "
-        query += f"{audit_data['name']}, {audit_data['type']}, {audit_data['action']}"
+        query += f"'{audit_data['name']}', '{audit_data['type']}', '{audit_data['action']}'"
         query += ")"
+        print(query)
         self.raw(query)
         self.db.commit()
 
