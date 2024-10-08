@@ -335,7 +335,7 @@ async def command_audit(ctx, *args):
         audit = db.get_admin_audit()
         for a in audit:
             msg_str += f"{a['timestamp']}: {a['username']} invokeed "
-            msg_str += f"{a['type']}: {a['action']}"
+            msg_str += f"{a['type']}: {a['action']}\n"
     elif args[0] == "age":
         if "d" in args[1]:
             _days = args[1].split("d")[0]
@@ -347,7 +347,7 @@ async def command_audit(ctx, *args):
         audit = db.get_admin_audit('age', datetime.timestamp(age))
         for a in audit:
             msg_str += f"{a['timestamp']}: {a['username']} invokeed "
-            msg_str += f"{a['type']}: {a['action']}"
+            msg_str += f"{a['type']}: {a['action']}\n"
     else:
         msg_str = "Command not supported!"
 
