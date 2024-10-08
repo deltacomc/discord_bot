@@ -287,7 +287,8 @@ class AdminParser(Parser):
                 "steamid": result.group(2),
                 "name": result.group(3),
                 "type": result.group(4),
-                "action": result.group(5)
+                "action": result.group(5),
+                "hash": self._hash_string(string)
             })
         
         return retval
