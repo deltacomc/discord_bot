@@ -12,7 +12,7 @@ import sys
 import random
 import traceback
 
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from zoneinfo import ZoneInfo
 
 import discord
@@ -135,7 +135,7 @@ def _load_config() -> None:
     if init:
         db.save_config(config)
 
-def _convert_time(in_sec: int):
+def _convert_time(in_sec: int) -> str:
     days = 0
     hours = 0
     minutes = 0
@@ -151,6 +151,9 @@ def _convert_time(in_sec: int):
     seconds = int(seconds % 60)
 
     return f"{days:02d}d {hours:02d}:{minutes:02d}:{seconds:02d}"
+
+def _get_date_for_age(in_sec: int) -> datetime:
+    return datetime.today() - timedelta(days=in_sec)
 
 async def _reply(context, msg) -> None:
     if config["reply"] == "same_channel":
@@ -321,6 +324,37 @@ async def on_loop_error(error):
         log_parser_loop.restart()
     else:
         pass
+
+@client.command(name="audit")
+@commands.has_role(CONFIG_SUPER_ADMIN_ROLE)
+async def command_audit(ctx, *args):
+    """print audit log"""
+    db = ScumLogDataManager(DATABASE_FILE)
+    msg_str = ""
+    if len(args) == 0:
+        audit = db.get_admin_audit()
+        for a in audit:
+            msg_str += f"{a['timestamp']}: {a['username']} invokeed "
+            msg_str += f"{a['type']}: {a['action']}"
+    elif args[0] == "age":
+        if "d" in args[1]:
+            _days = args[1].split("d")[0]
+            age = _get_date_for_age(_days)
+        elif "m" in args[1]:
+            _months = args[1].split("m")[0]
+            age = _get_date_for_age(_months * 30)
+
+        audit = db.get_admin_audit('age', datetime.timestamp(age))
+        for a in audit:
+            msg_str += f"{a['timestamp']}: {a['username']} invokeed "
+            msg_str += f"{a['type']}: {a['action']}"
+    else:
+        msg_str = "Command not supported!"
+
+    if len(msg_str) > 0:
+        await ctx.author.send(msg_str)
+    else:
+        await ctx.author.send("No entries in audit!")
 
 @client.command(name="config")
 @commands.has_role(CONFIG_ADMIN_ROLE)

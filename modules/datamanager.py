@@ -499,9 +499,20 @@ class ScumLogDataManager:
         retval = []
         if by is None and value is None:
             query = "SELECT timestamp, steamid, name, type, action from admin_audit"
-            result = self.raw(query)
-            retval = result
-            
+        elif by == "age" and value is not None:
+            query = "SELECT timestamp, steamid, name, type, "
+            query += f"action from admin_audit where timestamp >= {int(value)}"
+
+        result = self.raw(query)
+        for r in result:
+            retval.append({
+                "timestamp": r[0],
+                "steamid": r[1],
+                "username": r[2],
+                "type": r[3],
+                "action": r[4]
+            })
+        
         return retval
 
     def close(self) -> None:
