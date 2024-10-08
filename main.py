@@ -46,9 +46,17 @@ LOG_CHECK_INTERVAL = os.getenv("LOG_CHECK_INTERVAL")
 HELP_COMMAND = os.getenv("BOT_HELP_COMMAND")
 
 CONFIG_ADMIN_ROLE = os.getenv("BOT_USER_ADMIN_ROLE")
+CONFIG_SUPER_ADMIN_ROLE = os.getenv("BOT_SUPER_ADMIN_ROLE")
+CONFIG_USER_ROLE = os.getenv("BOT_USER_ROLE")
 
 if CONFIG_ADMIN_ROLE is None:
     CONFIG_ADMIN_ROLE = 'sbot_admin'
+
+if CONFIG_SUPER_ADMIN_ROLE is None:
+    CONFIG_SUPER_ADMIN_ROLE = 'sbot_super_admin'
+
+if CONFIG_USER_ROLE is None:
+    CONFIG_USER_ROLE = '@everyone'
 
 if LOG_CHECK_INTERVAL is None:
     LOG_CHECK_INTERVAL = 60.0
@@ -371,6 +379,7 @@ async def command_config(ctx, *args):
 
 
 @client.command(name="lifetime")
+@commands.has_role(CONFIG_USER_ROLE)
 async def command_lifetime(ctx, player: str = None):
     """Command to check server liftime of players"""
     msg_str = None
@@ -396,6 +405,7 @@ async def command_lifetime(ctx, player: str = None):
     db.close()
 
 @client.command(name='bunkers')
+@commands.has_role(CONFIG_USER_ROLE)
 async def command_bunkers(ctx, bunker: str = None):
     """Command to check Active bunkers"""
     msg_str = None
@@ -438,6 +448,7 @@ async def command_bunkers(ctx, bunker: str = None):
     db.close()
 
 @client.command(name='online')
+@commands.has_role(CONFIG_USER_ROLE)
 async def player_online(ctx, player: str = None):
     """Command to check if player is online"""
     message = ""
@@ -480,6 +491,7 @@ async def player_online(ctx, player: str = None):
     db.close()
 
 @client.command(name='lastseen')
+@commands.has_role(CONFIG_USER_ROLE)
 async def player_lastseen(ctx, player: str):
     """Function to check last seen of a player"""
     message = ""
@@ -517,6 +529,7 @@ async def player_lastseen(ctx, player: str):
     db.close()
 
 @client.command(name=HELP_COMMAND)
+@commands.has_role(CONFIG_USER_ROLE)
 async def bot_help(ctx):
     """Help command"""
     msg_str = f"Hi, {ctx.author}. My Name is {client.user}.\n"
@@ -546,6 +559,7 @@ async def bot_help(ctx):
     await _reply(ctx, msg_str)
 
 @client.command(name='99')
+@commands.has_role(CONFIG_USER_ROLE)
 async def nine_nine(ctx):
     """Print a quote from Brookly 9-9"""
     brooklyn_99_quotes = [
