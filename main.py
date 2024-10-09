@@ -331,10 +331,13 @@ async def command_audit(ctx, *args):
     """print audit log"""
     db = ScumLogDataManager(DATABASE_FILE)
     msg_str = ""
+    local_timezone = ZoneInfo('Europe/Berlin')
     if len(args) == 0:
         audit = db.get_admin_audit()
         for a in audit:
-            msg_str += f"{a['timestamp']}: {a['username']} invokeed "
+            msg_str += f"{datetime.fromtimestamp(a['timestamp'],
+                        local_timezone).strftime('%Y-%m-%d %H:%M:%S')}: "
+            msg_str += "{a['username']} invokeed "
             msg_str += f"{a['type']}: {a['action']}\n"
     elif args[0] == "age":
         if "d" in args[1]:
@@ -346,7 +349,9 @@ async def command_audit(ctx, *args):
 
         audit = db.get_admin_audit('age', datetime.timestamp(age))
         for a in audit:
-            msg_str += f"{a['timestamp']}: {a['username']} invokeed "
+            msg_str += f"{datetime.fromtimestamp(a['timestamp'],
+                        local_timezone).strftime('%Y-%m-%d %H:%M:%S')}: "
+            msg_str += "{a['username']} invokeed "
             msg_str += f"{a['type']}: {a['action']}\n"
     else:
         msg_str = "Command not supported!"
