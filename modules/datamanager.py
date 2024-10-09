@@ -101,6 +101,8 @@ class ScumLogDataManager:
 
         cursor.execute("CREATE TABLE IF NOT EXISTS config (config_key TEXT PRIMARY KEY, config_parameter TEXT)")
 
+        cursor.execute("CREATE TABLE IF NOT EXISTS config (steamid INTEGER PRIMARY KEY, points INTEGER)")
+
         cursor.execute("CREATE TABLE IF NOT EXISTS scum_schema (name TEXT, schema_version INTEGER PRIMARY KEY)")
 
         self._update_schema_version()
@@ -515,6 +517,30 @@ class ScumLogDataManager:
                 "action": r[4]
             })
         
+        return retval
+
+    def update_fame_points(self, _data: dict) -> None:
+        query = f"SELECT * from fame where steamid = {_data['steamid']}"
+        sel = self.raw(query)
+        if len(sel) == 0:
+            query = "INSERT INTO fame (steamid, points) VALUES "
+            query += f"({_data['steamid']}, {_data['points']})"
+            self.raw(query)
+        else:
+            query = "UPDAE fame SET steamid = {_data['steamid']} "
+            query += f", points = {_data['points']}"
+            self.raw(query)
+
+    def get_fame_points(self, name: str) -> dict:
+        retval = {}
+        query = f"SELECT steamid from player where name = '{name}'"
+        sel = self.raw(query)
+        if len(sel) == 0:
+            query = f"SELECT * from fame where steamid = {sel['steamid']}"
+            sel_points = self.raw(query)
+            retval.update({
+                name: sel_points["points"]
+            })
         return retval
 
     def close(self) -> None:

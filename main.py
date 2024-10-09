@@ -275,7 +275,7 @@ async def handle_fame(msgs, file, dbconnection):
                 msg = fp.parse(mm)
                 if msg and dbconnection.check_message_send(msg["hash"]):
                     logging.debug(f"Player: {msg['name']} has {msg['points']} Points.")
-                    # TODO: store in database
+                    dbconnection.update_fame_points(msg)
                     dbconnection.store_message_send(msg["hash"])
 
 async def handle_admin_log(msgs, file, dbconnection):
