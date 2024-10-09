@@ -101,7 +101,7 @@ class ScumLogDataManager:
 
         cursor.execute("CREATE TABLE IF NOT EXISTS config (config_key TEXT PRIMARY KEY, config_parameter TEXT)")
 
-        cursor.execute("CREATE TABLE IF NOT EXISTS config (steamid INTEGER PRIMARY KEY, points INTEGER)")
+        cursor.execute("CREATE TABLE IF NOT EXISTS fame (steamid INTEGER PRIMARY KEY, points INTEGER)")
 
         cursor.execute("CREATE TABLE IF NOT EXISTS scum_schema (name TEXT, schema_version INTEGER PRIMARY KEY)")
 
