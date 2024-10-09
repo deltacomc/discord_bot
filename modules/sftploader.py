@@ -106,7 +106,7 @@ class ScumSFTPLogParser:
         return ret_val
 
     def _retrieve_files(self):
-        self.logging.debug("retrive file listing")
+        self.logging.info(f"retrive file listing from server {self.sftp_server}")
         if self.connect_sftp_p is None or not self._check_connection_alive():
             self._open_connection()
         try:
@@ -134,13 +134,13 @@ class ScumSFTPLogParser:
                 self._retry = False
 
     def _retrive_file_content(self):
-        self.logging.debug("retrive file content")
         if self.connect_sftp_p is None or not self._check_connection_alive():
             self._open_connection()
         self.new_log_data = {}
         try:
             # pylint: disable=unused-variable
             for base_name, (latest_file, _) in self.file_groups.items():
+                self.logging.info(f"retrive file content for {base_name}")
             # pylint: enable=unused-variable
                 with self.connect_sftp_p.open(latest_file) as file:
                     raw_content = file.read()

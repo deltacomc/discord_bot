@@ -353,7 +353,7 @@ class ScumLogDataManager:
                 retval = []
             elif len(bunker_data) > 1:
                 # 1, 1726252409, 'C1', 1, -393614.781, 216967.266, 59906.152, 0, 0
-                self.logging.info("Found more than one Bunker with that name.")
+                self.logging.info(f"Found more than one Bunker with name {bunker}.")
                 for p in bunker_data:
                     retval.append({
                             "name": p[2],
@@ -368,7 +368,7 @@ class ScumLogDataManager:
                             }
                             })
             else:
-                self.logging.info("One Bunker found.")
+                self.logging.info(f"One Bunker found for {bunker}.")
                 retval.append({
                         "name": bunker_data[0][2],
                         "timestamp": bunker_data[0][1],
@@ -388,7 +388,7 @@ class ScumLogDataManager:
                 retval = []
             else:
                 # 1, 1726252409, 'C1', 1, -393614.781, 216967.266, 59906.152, 0, 0
-                self.logging.info("Got all Bunker Data")
+                self.logging.info("Got data for all bunkers.")
                 for p in bunker_data:
                     retval.append({
                             "name": p[2],
