@@ -341,10 +341,10 @@ async def command_audit(ctx, *args):
             msg_str += f"{a['type']}: {a['action']}\n"
     elif args[0] == "age":
         if "d" in args[1]:
-            _days = args[1].split("d")[0]
+            _days = int(args[1].split("d")[0])
             age = _get_date_for_age(_days)
         elif "m" in args[1]:
-            _months = args[1].split("m")[0]
+            _months = int(args[1].split("m")[0])
             age = _get_date_for_age(_months * 30)
 
         audit = db.get_admin_audit('age', datetime.timestamp(age))
