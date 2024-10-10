@@ -337,7 +337,7 @@ async def command_audit(ctx, *args):
         for a in audit:
             msg_str += f"{datetime.fromtimestamp(a['timestamp'],
                         local_timezone).strftime('%Y-%m-%d %H:%M:%S')}: "
-            msg_str += "{a['username']} invokeed "
+            msg_str += f"{a['username']} invokeed "
             msg_str += f"{a['type']}: {a['action']}\n"
     elif args[0] == "age":
         if "d" in args[1]:
@@ -351,7 +351,7 @@ async def command_audit(ctx, *args):
         for a in audit:
             msg_str += f"{datetime.fromtimestamp(a['timestamp'],
                         local_timezone).strftime('%Y-%m-%d %H:%M:%S')}: "
-            msg_str += "{a['username']} invokeed "
+            msg_str += f"{a['username']} invokeed "
             msg_str += f"{a['type']}: {a['action']}\n"
     else:
         msg_str = "Command not supported!"
