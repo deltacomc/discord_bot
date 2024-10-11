@@ -527,7 +527,7 @@ class ScumLogDataManager:
             query += f"({_data['steamid']}, {_data['points']})"
             self.raw(query)
         else:
-            query = "UPDAE fame SET steamid = {_data['steamid']} "
+            query = "UPDATE fame SET steamid = {_data['steamid']} "
             query += f", points = {_data['points']}"
             self.raw(query)
 
