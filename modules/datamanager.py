@@ -508,6 +508,7 @@ class ScumLogDataManager:
         self.db.commit()
 
     def get_admin_audit(self, by: str = None, value: str = None) -> list:
+        """ get audit data """
         retval = []
         if by is None and value is None:
             query = "SELECT timestamp, steamid, name, type, action from admin_audit"
@@ -524,7 +525,7 @@ class ScumLogDataManager:
                 "type": r[3],
                 "action": r[4]
             })
-        
+
         return retval
 
     def update_fame_points(self, _data: dict) -> None:
