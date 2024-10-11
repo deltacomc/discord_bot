@@ -528,6 +528,7 @@ class ScumLogDataManager:
         return retval
 
     def update_fame_points(self, _data: dict) -> None:
+        """update fame points"""
         query = f"SELECT * from fame where steamid = {_data['steamid']}"
         sel = self.raw(query)
         if len(sel) == 0:
@@ -535,11 +536,12 @@ class ScumLogDataManager:
             query += f"({_data['steamid']}, {_data['points']})"
             self.raw(query)
         else:
-            query = "UPDATE fame SET steamid = {_data['steamid']} "
+            query = f"UPDATE fame SET steamid = {_data['steamid']} "
             query += f", points = {_data['points']}"
             self.raw(query)
 
     def get_fame_points(self, name: str) -> dict:
+        """ get fame points """
         retval = {}
         query = f"SELECT steamid from player where name = '{name}'"
         sel = self.raw(query)
