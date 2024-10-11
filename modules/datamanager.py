@@ -503,7 +503,7 @@ class ScumLogDataManager:
         query += f"VALUES ({audit_timestamp}, {audit_data['steamid']}, "
         query += f"'{audit_data['name']}', '{audit_data['type']}', '{audit_data['action']}'"
         query += ")"
-        print(query)
+
         self.raw(query)
         self.db.commit()
 

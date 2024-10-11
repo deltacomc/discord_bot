@@ -290,8 +290,7 @@ class AdminParser(Parser):
                 "action": result.group(5),
                 "hash": self._hash_string(string)
             })
-        print(string)
-        print(retval)
+
         return retval
 
 # pylint: enable=line-too-long
