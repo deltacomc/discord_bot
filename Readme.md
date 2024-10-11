@@ -8,12 +8,13 @@ preliminary readme
     * !lastseen <user> - Returns if a user is online or not and lasst seen time if offline.
     * !bunkers <bunker> - Returns if bunker is active. <bunker> is optional.
     * !lifetime <user> - Returns the lifetime of a player on the Server. <user> is optional.
-    * !config <config key> <config value> - configure some bot setting during runtime. (Only for role BOT_USER_ADMIN_ROLE)
+    * !config <config key> <config value> - configure some bot setting during runtime. (Only for role BOT_USER_ADMIN_ROLE and user BOT_ADMIN_USER)
       valid keys and values:
         -> reply: private or same_channel - when private will respond via DM. same_channel reply to same channel.
         -> publish_login: 0 = disable, 1 = enable. When enabled will report logins to SCUM_LOG_FEED_CHANNEL
         -> publish_bunkers: 0 = disable, 1 = enable. When enabled will report bunker activations to SCUM_LOG_FEED_CHANNEL
         -> publish_kills: 0 = disable, 1 = enable. When enabled will report kills to SCUM_LOG_FEED_CHANNEL
+      - BOT_ADMIN_USER can contact the bot in DM to execute config command
 
 ## configure env-file
 ```

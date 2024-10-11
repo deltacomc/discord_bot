@@ -12,7 +12,7 @@ import sys
 import random
 import traceback
 
-from datetime import datetime, date, timedelta
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 import discord
@@ -48,6 +48,7 @@ HELP_COMMAND = os.getenv("BOT_HELP_COMMAND")
 CONFIG_ADMIN_ROLE = os.getenv("BOT_USER_ADMIN_ROLE")
 CONFIG_SUPER_ADMIN_ROLE = os.getenv("BOT_SUPER_ADMIN_ROLE")
 CONFIG_USER_ROLE = os.getenv("BOT_USER_ROLE")
+CONFIG_ADMIN_USER = os.getenv("BOT_ADMIN_USER")
 
 if CONFIG_ADMIN_ROLE is None:
     CONFIG_ADMIN_ROLE = 'sbot_admin'
@@ -65,6 +66,9 @@ else:
 
 if HELP_COMMAND is None:
     HELP_COMMAND = "buffi"
+
+if CONFIG_ADMIN_USER:
+    CONFIG_ADMIN_USER = "none"
 
 WEAPON_LOOKUP = {
     "Compound_Bow_C": "compund bow"
@@ -363,10 +367,8 @@ async def command_audit(ctx, *args):
     else:
         await ctx.author.send("No entries in audit!")
 
-@client.command(name="config")
-@commands.has_role(CONFIG_ADMIN_ROLE)
-async def command_config(ctx, *args):
-    """configure some settings on the bot"""
+async def handle_command_config(ctx, args):
+    """ ** """
     db = ScumLogDataManager(DATABASE_FILE)
     if len(args) <= 0:
         msg = "Current config:\n"
@@ -413,10 +415,23 @@ async def command_config(ctx, *args):
                 config.update({"publish_kills": False})
 
     logging.info(f"Updated config: {args[0]} = {config[args[0]]}")
-
-    # await ctx.reply(f"Saved config: {args[0]} = {config[args[0]]}")
     await ctx.author.send(f"Saved config: {args[0]} = {config[args[0]]}")
     db.save_config(config)
+
+@client.command(name="config")
+async def command_config(ctx, *args):
+    """configure some settings on the bot"""
+    if ctx.guild:
+        roles = []
+        for role in ctx.author.roles:
+            roles.append(role.name)
+
+        if CONFIG_ADMIN_ROLE in roles:
+            await handle_command_config(ctx, args)
+
+    else:
+        if CONFIG_ADMIN_USER == ctx.author.name:
+            await handle_command_config(ctx, args)
 
 
 @client.command(name="lifetime")
