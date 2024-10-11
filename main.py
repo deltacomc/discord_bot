@@ -393,7 +393,6 @@ async def handle_command_config(ctx, args):
         msg = "Current config:\n"
         for cfg in config.items():
             msg += f"{cfg[0]}: {cfg[1]}\n"
-        # await ctx.reply(msg)
         await ctx.author.send(msg)
         return
 
@@ -469,7 +468,6 @@ async def command_lifetime(ctx, player: str = None):
             msg_str = f"Player {player} has no life on this server."
     else:
         logging.info("Getting all players that visited the server")
-        # msg_str = "Not yet implemented to get all players."
         player_stat = db.get_player_status()
         msg_str = "Following players have a liftime on this server:\n"
         for p in player_stat:
