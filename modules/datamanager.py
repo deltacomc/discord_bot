@@ -425,6 +425,14 @@ class ScumLogDataManager:
         """
         self._discard_old_values("log_hashes", age)
 
+
+    def discard_old_admin_audtis(self, age: int) -> None:
+        """discard old log file hashes from table
+           Parameters:
+            age: int in seconds
+        """
+        self._discard_old_values("admin_audit", age)
+
     def raw(self, query: str) -> list[any]:
         """raw sql query"""
         cursor = self.db.cursor()

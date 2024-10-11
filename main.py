@@ -312,6 +312,8 @@ async def log_parser_loop():
 
     if datetime.now().hour == 0 and datetime.now().minute == 0:
         db.discard_old_logfiles(30*86400)
+        db.discard_aged_messages(30*86400)
+        db.discard_old_admin_audtis(60*86400)
     db.close()
 
 @log_parser_loop.error
