@@ -15,6 +15,10 @@ preliminary readme
         -> publish_bunkers: 0 = disable, 1 = enable. When enabled will report bunker activations to SCUM_LOG_FEED_CHANNEL
         -> publish_kills: 0 = disable, 1 = enable. When enabled will report kills to SCUM_LOG_FEED_CHANNEL
       - BOT_ADMIN_USER can contact the bot in DM to execute config command
+    * !audit <age> - Audit Admin log
+       -> <age> can be in days or month (e.g. !audit 14d, !audit 3m)
+       -> Can only be called by users with role CONFIG_SUPER_ADMIN_ROLE
+       -> Can be used via DM by user BOT_SUPER_ADMIN_USER
 
 ## configure env-file
 ```
@@ -33,8 +37,14 @@ LOG_DIRECTORY= # Path to logfiles
 LOG_CHECK_INTERVAL= 60 # Interval in which bot will check server log files (default: 60 seconds)
 
 BOT_HELP_COMMAND= # Command to print bot help (default: buffi)
+
+BOT_USER_ROLE= # user role who can invoke user commands. Set to @everyone for global access
 BOT_USER_ADMIN_ROLE= # Admin role that is allowed to modify bot runtime configuration (default: sbot_admin)
                      # Role has to be created on server.
+BOT_ADMIN_USER= # User who can invoke config command via DM
+
+BOT_SUPER_ADMIN_ROLE= # Users with super admin role can invoke audit command
+BOT_SUPER_ADMIN_USER= # Super admin who can invoke audit command via DM
 
 ```
 
