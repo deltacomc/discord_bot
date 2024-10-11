@@ -49,6 +49,7 @@ CONFIG_ADMIN_ROLE = os.getenv("BOT_USER_ADMIN_ROLE")
 CONFIG_SUPER_ADMIN_ROLE = os.getenv("BOT_SUPER_ADMIN_ROLE")
 CONFIG_USER_ROLE = os.getenv("BOT_USER_ROLE")
 CONFIG_ADMIN_USER = os.getenv("BOT_ADMIN_USER")
+CONFIG_SUPER_ADMIN_USER = os.getenv("BOT_SUPER_ADMIN_USER")
 
 if CONFIG_ADMIN_ROLE is None:
     CONFIG_ADMIN_ROLE = 'sbot_admin'
@@ -67,8 +68,11 @@ else:
 if HELP_COMMAND is None:
     HELP_COMMAND = "buffi"
 
-if CONFIG_ADMIN_USER:
+if not CONFIG_ADMIN_USER:
     CONFIG_ADMIN_USER = "none"
+
+if not CONFIG_SUPER_ADMIN_USER:
+    CONFIG_SUPER_ADMIN_USER = "none"
 
 WEAPON_LOOKUP = {
     "Compound_Bow_C": "compund bow"
@@ -331,10 +335,8 @@ async def on_loop_error(error):
     else:
         pass
 
-@client.command(name="audit")
-@commands.has_role(CONFIG_SUPER_ADMIN_ROLE)
-async def command_audit(ctx, *args):
-    """print audit log"""
+async def handle_command_audit(ctx, args):
+    """ handle commaand audit"""
     db = ScumLogDataManager(DATABASE_FILE)
     msg_str = ""
     local_timezone = ZoneInfo('Europe/Berlin')
@@ -352,6 +354,8 @@ async def command_audit(ctx, *args):
         elif "m" in args[1]:
             _months = int(args[1].split("m")[0])
             age = _get_date_for_age(_months * 30)
+        else:
+            age = 0
 
         audit = db.get_admin_audit('age', datetime.timestamp(age))
         for a in audit:
@@ -366,6 +370,21 @@ async def command_audit(ctx, *args):
         await ctx.author.send(msg_str)
     else:
         await ctx.author.send("No entries in audit!")
+
+@client.command(name="audit")
+async def command_audit(ctx, *args):
+    """print audit log"""
+    if ctx.guild:
+        roles = []
+        for role in ctx.author.roles:
+            roles.append(role.name)
+
+        if CONFIG_SUPER_ADMIN_ROLE in roles:
+            await handle_command_audit(ctx, args)
+
+    else:
+        if CONFIG_SUPER_ADMIN_USER == ctx.author.name:
+            await handle_command_audit(ctx, args)
 
 async def handle_command_config(ctx, args):
     """ ** """
