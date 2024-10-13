@@ -82,7 +82,8 @@ DEFAULT_CONFIG = {
     "reply": "same_channel",
     "publish_login": False,
     "publish_bunkers": False,
-    "publish_kills": False
+    "publish_kills": False,
+    "publish_admin_log": False
 }
 
 config = DEFAULT_CONFIG
@@ -138,6 +139,8 @@ def _load_config() -> None:
         _config.update({"publish_bunkers": DEFAULT_CONFIG['publish_bunkers']})
     if "publish_kills" not in _config:
         _config.update({"publish_kills": DEFAULT_CONFIG['publish_kills']})
+    if "publish_admin_log" not in _config:
+        _config.update({"publish_admin_log": DEFAULT_CONFIG['publish_admin_log']})
 
     config = _config
     if init:
@@ -298,6 +301,11 @@ async def handle_admin_log(msgs, file, dbconnection):
                     logging.debug(f"Admin: {msg['name']} has called a type {msg['type']} command.")
                     dbconnection.store_message_send(msg["hash"])
                     dbconnection.update_admin_audit(msg)
+                    if config["publish_admin_log"]:
+                        channel = client.get_channel(int(LOG_FEED_CHANNEL))
+                        msg_str = f"Admin: {msg['name']} has used: {msg['type']} "
+                        msg_str += f"command with action {msg['action']}"
+                        await channel.send(msg_str)
 
 @tasks.loop(seconds=LOG_CHECK_INTERVAL)
 async def log_parser_loop():
