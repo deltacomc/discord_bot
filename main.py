@@ -86,6 +86,13 @@ DEFAULT_CONFIG = {
     "publish_admin_log": False
 }
 
+BOT_ROLES = [
+    "user",
+    "moderator",
+    "admin",
+    "owner"
+]
+
 config = DEFAULT_CONFIG
 intents = discord.Intents.default()
 intents.message_content = True
@@ -342,6 +349,23 @@ async def on_loop_error(error):
         log_parser_loop.restart()
     else:
         pass
+
+@client.command(name="memeber")
+async def command_member(ctx, *args):
+    """ hanle command member"""
+    if len(args) == 0:
+        # get all memebers
+        pass
+    elif len(args) == 1:
+        # get memeber with given name
+        pass
+    elif len(args) == 2:
+        # set bot_role of memeber
+        pass
+    else:
+        ctx.author.send("Too many arguments for command 'member'")
+
+    ctx.author.send("This command is under development!")
 
 async def handle_command_audit(ctx, args):
     """ handle commaand audit"""
