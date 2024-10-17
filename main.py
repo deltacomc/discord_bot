@@ -127,7 +127,7 @@ async def on_ready():
 
     _load_config()
     # Inital load of guild members
-    load_guild_members(db)
+    await load_guild_members(db)
 
     # Start the loop that checks log files periodically
     if not log_parser_loop.is_running():
@@ -372,8 +372,8 @@ async def log_parser_loop():
             elif "admin" in file_key:
                 await handle_admin_log(msgs, file_key, db)
 
-    if datetime.now().minute / 10 == 0:
-        load_guild_members(db)
+    if datetime.now().minute % 10 == 0:
+        await load_guild_members(db)
 
     if datetime.now().hour == 0 and datetime.now().minute == 0:
         db.discard_old_logfiles(30*86400)
