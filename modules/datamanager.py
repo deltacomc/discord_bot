@@ -535,6 +535,8 @@ class ScumLogDataManager:
         """update fame points"""
         query = f"SELECT * from fame where steamid = {_data['steamid']}"
         sel = self.raw(query)
+        print(sel)
+        print(_data)
         if len(sel) == 0:
             query = "INSERT INTO fame (steamid, points) VALUES "
             query += f"({_data['steamid']}, {_data['points']})"
@@ -543,6 +545,8 @@ class ScumLogDataManager:
             query = f"UPDATE fame SET steamid = {_data['steamid']} "
             query += f", points = {_data['points']}"
             self.raw(query)
+
+        self.db.commit()
 
     def get_fame_points(self, name: str) -> dict:
         """ get fame points """
@@ -587,7 +591,7 @@ class ScumLogDataManager:
                 })
 
         return retval
-    
+
     def close(self) -> None:
         """close database connection"""
         self.db.commit()
