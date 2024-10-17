@@ -118,7 +118,7 @@ async def on_ready():
             f'Starting log parser.'
         )
     #call database manager to initialize db
-    ScumLogDataManager(DATABASE_FILE)
+    db = ScumLogDataManager(DATABASE_FILE)
 
     # Open SFTP connection to the game server
     lp = ScumSFTPLogParser(server=SFTP_SERVER, port=SFTP_PORT, passwd=SFTP_PASSWORD,
@@ -126,6 +126,8 @@ async def on_ready():
                            database=DATABASE_FILE, debug_callback=None)
 
     _load_config()
+    # Inital load of guild members
+    load_guild_members(db)
 
     # Start the loop that checks log files periodically
     if not log_parser_loop.is_running():
