@@ -332,7 +332,7 @@ async def load_guild_members(db: ScumLogDataManager):
                             "bot_role": "user"
                         }
                     })
-                    logging.debug(current_members)
+                    logging.debug(",".join(current_members))
                     db.update_guild_member(member, current_members[member]["guild_role"],
                                           current_members[member]["bot_role"])
                     continue
@@ -347,7 +347,7 @@ async def load_guild_members(db: ScumLogDataManager):
                         })
                         db.update_guild_member(member, current_members[member]["guild_role"],
                                           current_members[member]["bot_role"])
-                        logging.debug(current_members)
+                        logging.debug(",".join(current_members))
 
                     continue
 
