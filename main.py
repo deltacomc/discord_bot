@@ -314,6 +314,43 @@ async def handle_admin_log(msgs, file, dbconnection):
                         msg_str += f"command with action {msg['action']}"
                         await channel.send(msg_str)
 
+async def load_guild_members(db: ScumLogDataManager):
+    """load guild members and add new members to database"""
+    current_members = db.get_guild_member()
+    logging.info("Updateing guild members.")
+    for guild in client.guilds:
+        if guild.name == GUILD:
+            for member in guild.members:
+                if member not in current_members:
+                    # add member
+                    logging.info(f"Found new discord member: {member}.")
+                    current_members.update({
+                        member: {
+                            "guild_role": guild.get_member(member),
+                            "bot_role": "user"
+                        }
+                    })
+                    logging.debug(current_members)
+                    db.update_guild_member(member, current_members[member]["guild_role"],
+                                          current_members[member]["bot_role"])
+                    continue
+                else:
+                    # update guild roles if necessary
+                    if guild.get_member(member) != current_members[member]["guild_role"]:
+                        current_members.update({
+                            member: {
+                                "guild_role": guild.get_member(member),
+                                "bot_role": current_members[member]["bot_role"]
+                            }
+                        })
+                        db.update_guild_member(member, current_members[member]["guild_role"],
+                                          current_members[member]["bot_role"])
+                        logging.debug(current_members)
+
+                    continue
+
+            break
+
 @tasks.loop(seconds=LOG_CHECK_INTERVAL)
 async def log_parser_loop():
     """Loop to parse logfiles and handle outputs"""
@@ -332,6 +369,9 @@ async def log_parser_loop():
                 await handle_fame(msgs, file_key, db)
             elif "admin" in file_key:
                 await handle_admin_log(msgs, file_key, db)
+
+    if datetime.now().minute / 10 == 0:
+        load_guild_members(db)
 
     if datetime.now().hour == 0 and datetime.now().minute == 0:
         db.discard_old_logfiles(30*86400)
