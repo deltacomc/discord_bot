@@ -464,6 +464,15 @@ async def handle_command_config(ctx, args):
             else:
                 config.update({"publish_kills": False})
 
+    if args[0] == "publish_admin_log":
+        if len(args) < 2:
+            await ctx.send("Missing arguments.")
+        else:
+            if args[1].lower() == "true" or args[1] == "1":
+                config.update({"publish_admin_log": True})
+            else:
+                config.update({"publish_admin_log": False})
+
     logging.info(f"Updated config: {args[0]} = {config[args[0]]}")
     await ctx.author.send(f"Saved config: {args[0]} = {config[args[0]]}")
     db.save_config(config)
