@@ -10,7 +10,7 @@ import sqlite3
 from datetime import datetime
 from modules.output import Output
 
-SCHEMA_VERSION = 105
+SCHEMA_VERSION = 106
 
 class ScumLogDataManager:
     """Manage Database access for bot"""
@@ -102,6 +102,9 @@ class ScumLogDataManager:
         cursor.execute("CREATE TABLE IF NOT EXISTS config (config_key TEXT PRIMARY KEY, config_parameter TEXT)")
 
         cursor.execute("CREATE TABLE IF NOT EXISTS fame (steamid INTEGER PRIMARY KEY, points INTEGER)")
+
+        cursor.execute("CREATE TABLE IF NOT EXISTS guild_members (name TEXT PRIMARY KEY, \
+                       roles TEXT, bot_role TEXT)")
 
         cursor.execute("CREATE TABLE IF NOT EXISTS scum_schema (name TEXT, schema_version INTEGER PRIMARY KEY)")
 
@@ -554,6 +557,37 @@ class ScumLogDataManager:
             })
         return retval
 
+    def update_guild_member(self, name: str, guild_role: str, bot_role: str) -> None:
+        """ Update guild members"""
+        query = "SELECT * FROM guild_members"
+        res = self.raw(query)
+        if len(res) == 0:
+            query = "INSERT INTO guild_members (name, roles, bot_role)"
+            query += f" VALUES ({name}, {guild_role}, {bot_role})"
+        else:
+            query = "UPDATE guild_members SET"
+            query += f" roles='{guild_role}', bot_role='{bot_role}'"
+            query += f" WHERE name='{name}'"
+
+        self.raw(query)
+        self.db.commit()
+
+    def get_guild_member(self, name: str) -> dict:
+        """ get guild members"""
+        retval = {}
+        query = f"SELECT * FROM guild_members WHERE name='{name}'"
+        res = self.raw(query)
+        if len(res) != 0:
+            for member in res:
+                retval.update({
+                    name: {
+                        "guild_role": member[2],
+                        "bot_role": member[3]
+                    }
+                })
+
+        return retval
+    
     def close(self) -> None:
         """close database connection"""
         self.db.commit()
