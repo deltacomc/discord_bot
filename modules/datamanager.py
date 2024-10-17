@@ -576,10 +576,14 @@ class ScumLogDataManager:
         self.raw(query)
         self.db.commit()
 
-    def get_guild_member(self, name: str) -> dict:
+    def get_guild_member(self, name: str = "") -> dict:
         """ get guild members"""
         retval = {}
-        query = f"SELECT * FROM guild_members WHERE name='{name}'"
+        if name != "":
+            query = f"SELECT * FROM guild_members WHERE name='{name}'"
+        else:
+            query = "SELECT * FROM guild_members"
+
         res = self.raw(query)
         if len(res) != 0:
             for member in res:

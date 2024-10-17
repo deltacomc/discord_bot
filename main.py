@@ -394,7 +394,7 @@ async def on_loop_error(error):
 
 @client.command(name="memeber")
 async def command_member(ctx, *args):
-    """ hanle command member"""
+    """ handle command member"""
     if len(args) == 0:
         # get all memebers
         pass
@@ -410,7 +410,7 @@ async def command_member(ctx, *args):
     ctx.author.send("This command is under development!")
 
 async def handle_command_audit(ctx, args):
-    """ handle commaand audit"""
+    """ handle command audit"""
     db = ScumLogDataManager(DATABASE_FILE)
     msg_str = ""
     local_timezone = ZoneInfo('Europe/Berlin')
