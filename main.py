@@ -45,10 +45,12 @@ DATABASE_FILE = os.getenv("DATABASE_FILE")
 LOG_CHECK_INTERVAL = os.getenv("LOG_CHECK_INTERVAL")
 HELP_COMMAND = os.getenv("BOT_HELP_COMMAND")
 
-if os.getenv("BOT_USER_ADMIN_ROLE"):
+if os.getenv("BOT_USER_ADMIN_ROLE") is not None:
     CONFIG_ADMIN_ROLE = os.getenv("BOT_USER_ADMIN_ROLE")
-if os.getenv("BOT_ADMIN_ROLE"):
+elif os.getenv("BOT_ADMIN_ROLE") is not None:
     CONFIG_ADMIN_ROLE = os.getenv("BOT_ADMIN_ROLE")
+else:
+    CONFIG_ADMIN_ROLE = None
 
 CONFIG_ADMIN_USER = os.getenv("BOT_ADMIN_USER")
 CONFIG_SUPER_ADMIN_ROLE = os.getenv("BOT_SUPER_ADMIN_ROLE")
@@ -192,7 +194,7 @@ async def _reply(context, msg) -> None:
 def _check_user_bot_role(name: str, bot_role: str, super_admin: bool = False):
     db = ScumLogDataManager(DATABASE_FILE)
     user = db.get_guild_member(name)
-    user_ok = True
+    user_ok = False
     print(user)
 
     # if len(user) == 0:
