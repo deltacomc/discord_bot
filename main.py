@@ -96,6 +96,7 @@ BOT_ROLES = [
 config = DEFAULT_CONFIG
 intents = discord.Intents.default()
 intents.message_content = True
+intents.members = True
 
 client = commands.Bot(command_prefix="!",intents=intents)
 lp: None
@@ -322,6 +323,11 @@ async def load_guild_members(db: ScumLogDataManager):
     logging.info("Updateing guild members.")
     for guild in client.guilds:
         if guild.name == GUILD:
+            print(guild.member_count)
+            print(guild.members)
+            print(guild.owner)
+            print(guild.name)
+            print(guild.id)
             for member in guild.members:
                 update_member = False
                 roles= []
