@@ -358,6 +358,8 @@ async def load_guild_members(db: ScumLogDataManager):
                         update_member = True
 
                 print(current_members)
+                print(update_member)
+                print(member.name)
                 if update_member:
                     db.update_guild_member(member.id, member.name, current_members[member.name]["guild_role"],
                       current_members[member.name]["bot_role"])

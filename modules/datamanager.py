@@ -561,17 +561,17 @@ class ScumLogDataManager:
             })
         return retval
 
-    def update_guild_member(self, id: int, name: str, guild_role: str, bot_role: str) -> None:
+    def update_guild_member(self, _id: int, name: str, guild_role: str, bot_role: str) -> None:
         """ Update guild members"""
-        query = "SELECT * FROM guild_members"
+        query = f"SELECT * FROM guild_members WHERE id={_id}"
         res = self.raw(query)
         if len(res) == 0:
             query = "INSERT INTO guild_members (id, name, roles, bot_role)"
-            query += f" VALUES ({id}, '{name}', '{guild_role}', '{bot_role}')"
+            query += f" VALUES ({_id}, '{name}', '{guild_role}', '{bot_role}')"
         else:
             query = "UPDATE guild_members SET"
             query += f" roles='{guild_role}', bot_role='{bot_role}'"
-            query += f" WHERE id='{id}'"
+            query += f" WHERE id='{_id}'"
 
         self.raw(query)
         self.db.commit()
