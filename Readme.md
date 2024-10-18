@@ -41,7 +41,11 @@ BOT_HELP_COMMAND= # Command to print bot help (default: buffi)
 
 BOT_USER_ROLE= # user role who can invoke user commands. Set to @everyone for global access
 BOT_USER_ADMIN_ROLE= # Admin role that is allowed to modify bot runtime configuration (default: sbot_admin)
+                     # Role has to be created on server (deprecated).
+
+BOT_ADMIN_ROLE= # Admin role that is allowed to modify bot runtime configuration (default: sbot_admin)
                      # Role has to be created on server.
+
 BOT_ADMIN_USER= # User who can invoke config command via DM
 
 BOT_SUPER_ADMIN_ROLE= # Users with super admin role can invoke audit command
