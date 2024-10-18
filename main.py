@@ -189,6 +189,14 @@ def _check_user_bot_role(name: str, bot_role: str, super_admin: bool = False):
     user = db.get_guild_member(name)
     user_ok = False
     print(user)
+
+    if len(user) == 0:
+        if name == CONFIG_SUPER_ADMIN_USER and super_admin:
+            return True
+        # user not in DB so return 
+        else:
+            return False
+
     if BOT_ROLES.index(user[name]['bot_role']) >= BOT_ROLES.index(bot_role):
         user_ok = True
 
@@ -354,7 +362,7 @@ async def handle_admin_log(msgs, file, dbconnection):
 async def load_guild_members(db: ScumLogDataManager):
     """load guild members and add new members to database"""
     current_members = db.get_guild_member()
-    logging.info("Updateing guild members.")
+    logging.info("Updating guild members.")
     for guild in client.guilds:
         if guild.name == GUILD:
             for member in guild.members:
