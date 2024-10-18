@@ -182,6 +182,38 @@ async def _reply(context, msg) -> None:
     else:
         await context.author.send(msg)
 
+def _check_user_bot_role(name: str, bot_role: str, super_admin: bool = False):
+    db = ScumLogDataManager(DATABASE_FILE)
+    user = db.get_guild_member(name)
+    user_ok = False
+
+    if BOT_ROLES.index(user[name]['bot_role']) >= BOT_ROLES.index(bot_role):
+        user_ok = True
+
+    if name == CONFIG_SUPER_ADMIN_USER and super_admin:
+        user_ok = True
+
+    # if name == CONFIG_ADMIN_USER and admin:
+    #     user_ok = True
+
+    # for role in roles:
+    #     _roles.append(role.name)
+    #     if CONFIG_ADMIN_ROLE in _roles:
+    #         user_ok = True
+
+    # for role in roles:
+    #     _roles.append(role.name)
+    #     if CONFIG_USER_ROLE in _roles:
+    #         user_ok = True
+
+    # for role in roles:
+    #     _roles.append(role.name)
+
+    #     if CONFIG_SUPER_ADMIN_ROLE in _roles:
+    #         user_ok = True
+
+    return user_ok
+
 async def send_debug_message(message):
     """Function will send debug messages"""
     channel = client.get_channel(int(DEBUG_CHANNEL))
@@ -323,11 +355,6 @@ async def load_guild_members(db: ScumLogDataManager):
     logging.info("Updateing guild members.")
     for guild in client.guilds:
         if guild.name == GUILD:
-            print(guild.member_count)
-            print(guild.members)
-            print(guild.owner)
-            print(guild.name)
-            print(guild.id)
             for member in guild.members:
                 update_member = False
                 roles= []
@@ -337,17 +364,23 @@ async def load_guild_members(db: ScumLogDataManager):
                 if member.name not in current_members:
                     # add member
                     logging.info(f"Found new discord member: {member}.")
+                    if member.name == guild.owner.name:
+                        bot_role= "owner"
+                    else:
+                        bot_role = "user"
+
                     current_members.update({
                         member.name: {
                             "id": member.id,
                             "guild_role": ",".join(roles),
-                            "bot_role": "user"
+                            "bot_role": bot_role
                         }
                     })
                     update_member = True
                 else:
                     # update guild roles if necessary
                     if ",".join(roles) != current_members[member.name]["guild_role"]:
+                        logging.info(f"Update existing discord member: {member}")
                         current_members.update({
                             member.name: {
                                 "id": member.id,
@@ -357,12 +390,10 @@ async def load_guild_members(db: ScumLogDataManager):
                         })
                         update_member = True
 
-                print(current_members)
-                print(update_member)
-                print(member.name)
                 if update_member:
-                    db.update_guild_member(member.id, member.name, current_members[member.name]["guild_role"],
-                      current_members[member.name]["bot_role"])
+                    db.update_guild_member(member.id, member.name,
+                                           current_members[member.name]["guild_role"],
+                                           current_members[member.name]["bot_role"])
 
             break
 
@@ -405,22 +436,48 @@ async def on_loop_error(error):
     else:
         pass
 
-@client.command(name="memeber")
+@client.command(name="member")
 async def command_member(ctx, *args):
     """ handle command member"""
+    # pylint: disable=consider-using-dict-items
+    db = ScumLogDataManager(DATABASE_FILE)
+    msg_str = ""
+    if not _check_user_bot_role(ctx.author.name, 'admin', True):
+        await ctx.reply("You don't have permission to invoke this command.")
+        return
+
     if len(args) == 0:
-        # get all memebers
-        pass
+        members = db.get_guild_member()
+        msg_str = "Current members in database:\n"
+        for member in members:
+            msg_str += f"{member} - Discord Role: {members[member]['guild_role']}"
+            msg_str += f" - Bot Role: {members[member]['bot_role']}\n"
+
     elif len(args) == 1:
-        # get memeber with given name
-        pass
+        members = db.get_guild_member(args[0])
+        msg_str = "Current members in database:\n"
+        for member in members:
+            msg_str += f"{member} - Discord Role: {members[member]['guild_role']}"
+            msg_str += f" - Bot Role: {members[member]['bot_role']}\n"
+
     elif len(args) == 2:
         # set bot_role of memeber
-        pass
-    else:
-        ctx.author.send("Too many arguments for command 'member'")
+        member = db.get_guild_member(args[0])
+        if member[0]["bot_role"] == args[1]:
+            msg_str = f"Member {args[0]} already has bot role {args[1]}"
+        else:
+            msg_str = f"Member {args[0]} given bot role {args[1]}"
+            db.update_guild_member(member[args[0]]['id'],member[args[0]]['name'],
+                                   member[args[0]]['guild_role'],args[1])
 
-    ctx.author.send("This command is under development!")
+    else:
+        await ctx.author.send("Too many arguments for command 'member'")
+
+    if len(msg_str) > 0:
+        await ctx.author.send(msg_str)
+    else:
+        await ctx.author.send("No members in database!")
+    # pylint: enable=consider-using-dict-items
 
 async def handle_command_audit(ctx, args):
     """ handle command audit"""
@@ -466,11 +523,13 @@ async def command_audit(ctx, *args):
         for role in ctx.author.roles:
             roles.append(role.name)
 
-        if CONFIG_SUPER_ADMIN_ROLE in roles:
+        if CONFIG_SUPER_ADMIN_ROLE in roles or \
+           _check_user_bot_role(ctx.author.name, 'admin', True):
             await handle_command_audit(ctx, args)
 
     else:
-        if CONFIG_SUPER_ADMIN_USER == ctx.author.name:
+        if CONFIG_SUPER_ADMIN_USER == ctx.author.name or \
+           _check_user_bot_role(ctx.author.name, 'admin', True):
             await handle_command_audit(ctx, args)
 
 async def handle_command_config(ctx, args):
@@ -542,7 +601,8 @@ async def command_config(ctx, *args):
 
         print(roles)
         print(CONFIG_ADMIN_ROLE)
-        if CONFIG_ADMIN_ROLE in roles:
+        if CONFIG_ADMIN_ROLE in roles or \
+           _check_user_bot_role(ctx.author.name, 'moderator', True):
             await handle_command_config(ctx, args)
         else:
             await ctx.reply("You do not have permission to execute this command.")
@@ -551,7 +611,8 @@ async def command_config(ctx, *args):
         print(CONFIG_ADMIN_USER)
         print(ctx.author.name)
         print(CONFIG_ADMIN_USER == ctx.author.name)
-        if CONFIG_ADMIN_USER == ctx.author.name:
+        if CONFIG_ADMIN_USER == ctx.author.name or \
+           _check_user_bot_role(ctx.author.name, 'moderator', True):
             await handle_command_config(ctx, args)
         else:
             await ctx.reply("You do not have permission to execute this command.")
