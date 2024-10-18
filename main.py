@@ -538,12 +538,21 @@ async def command_config(ctx, *args):
         for role in ctx.author.roles:
             roles.append(role.name)
 
+        print(roles)
+        print(CONFIG_ADMIN_ROLE)
         if CONFIG_ADMIN_ROLE in roles:
             await handle_command_config(ctx, args)
+        else:
+            await ctx.reply("You do not have permission to execute this command.")
 
     else:
+        print(CONFIG_ADMIN_USER)
+        print(ctx.author.name)
+        print(CONFIG_ADMIN_USER == ctx.author.name)
         if CONFIG_ADMIN_USER == ctx.author.name:
             await handle_command_config(ctx, args)
+        else:
+            await ctx.reply("You do not have permission to execute this command.")
 
 
 @client.command(name="lifetime")
