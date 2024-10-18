@@ -323,33 +323,38 @@ async def load_guild_members(db: ScumLogDataManager):
     for guild in client.guilds:
         if guild.name == GUILD:
             for member in guild.members:
-                if member not in current_members:
+                update_member = False
+                roles= []
+                for role in guild.get_member(member.id).roles:
+                    roles.append(role.name)
+
+                if member.name not in current_members:
                     # add member
                     logging.info(f"Found new discord member: {member}.")
                     current_members.update({
-                        member: {
-                            "guild_role": guild.get_member(member),
+                        member.name: {
+                            "id": member.id,
+                            "guild_role": ",".join(roles),
                             "bot_role": "user"
                         }
                     })
-                    logging.debug(",".join(current_members))
-                    db.update_guild_member(member, current_members[member]["guild_role"],
-                                          current_members[member]["bot_role"])
-                    continue
+                    update_member = True
                 else:
                     # update guild roles if necessary
-                    if guild.get_member(member) != current_members[member]["guild_role"]:
+                    if ",".join(roles) != current_members[member.name]["guild_role"]:
                         current_members.update({
-                            member: {
-                                "guild_role": guild.get_member(member),
-                                "bot_role": current_members[member]["bot_role"]
+                            member.name: {
+                                "id": member.id,
+                                "guild_role": ",".join(roles),
+                                "bot_role": current_members[member.name]["bot_role"]
                             }
                         })
-                        db.update_guild_member(member, current_members[member]["guild_role"],
-                                          current_members[member]["bot_role"])
-                        logging.debug(",".join(current_members))
+                        update_member = True
 
-                    continue
+                print(current_members)
+                if update_member:
+                    db.update_guild_member(member.id, member.name, current_members[member.name]["guild_role"],
+                      current_members[member.name]["bot_role"])
 
             break
 
