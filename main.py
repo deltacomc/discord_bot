@@ -93,6 +93,8 @@ BOT_ROLES = [
     "owner"
 ]
 
+MAX_MESSAGE_LENGTH = 1000
+
 config = DEFAULT_CONFIG
 intents = discord.Intents.default()
 intents.message_content = True
@@ -511,7 +513,20 @@ async def handle_command_audit(ctx, args):
         msg_str = "Command not supported!"
 
     if len(msg_str) > 0:
-        await ctx.author.send(msg_str)
+        if len(msg_str) > MAX_MESSAGE_LENGTH:
+            chunks = []
+            chunk = ""
+            for line in msg_str.split("\n"):
+                if len(chunk) + len(line) < MAX_MESSAGE_LENGTH:
+                    chunk += f"{line}\n"
+                else:
+                    chunks.append(chunk)
+                    chunk = f"{line}\n"
+
+            for _chunk in chunks:
+                await ctx.author.send(_chunk)
+        else:
+            await ctx.author.send(msg_str)
     else:
         await ctx.author.send("No entries in audit!")
 
@@ -526,11 +541,15 @@ async def command_audit(ctx, *args):
         if CONFIG_SUPER_ADMIN_ROLE in roles or \
            _check_user_bot_role(ctx.author.name, 'admin', True):
             await handle_command_audit(ctx, args)
+        else:
+            await ctx.reply("You have no permission to execute this command!")
 
     else:
         if CONFIG_SUPER_ADMIN_USER == ctx.author.name or \
            _check_user_bot_role(ctx.author.name, 'admin', True):
             await handle_command_audit(ctx, args)
+        else:
+            await ctx.reply("You have no permission to execute this command!")
 
 async def handle_command_config(ctx, args):
     """ ** """
