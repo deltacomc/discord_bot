@@ -188,7 +188,7 @@ def _check_user_bot_role(name: str, bot_role: str, super_admin: bool = False):
     db = ScumLogDataManager(DATABASE_FILE)
     user = db.get_guild_member(name)
     user_ok = False
-
+    print(user)
     if BOT_ROLES.index(user[name]['bot_role']) >= BOT_ROLES.index(bot_role):
         user_ok = True
 
