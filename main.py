@@ -192,18 +192,18 @@ async def _reply(context, msg) -> None:
 def _check_user_bot_role(name: str, bot_role: str, super_admin: bool = False):
     db = ScumLogDataManager(DATABASE_FILE)
     user = db.get_guild_member(name)
-    user_ok = False
+    user_ok = True
     print(user)
 
-    if len(user) == 0:
-        if name == CONFIG_SUPER_ADMIN_USER and super_admin:
-            return True
-        # user not in DB so return 
-        else:
-            return False
+    # if len(user) == 0:
+    #     if name == CONFIG_SUPER_ADMIN_USER and super_admin:
+    #         return True
+    #     # user not in DB so return 
+    #     else:
+    #         return False
 
-    if BOT_ROLES.index(user[name]['bot_role']) >= BOT_ROLES.index(bot_role):
-        user_ok = True
+    # if BOT_ROLES.index(user[name]['bot_role']) >= BOT_ROLES.index(bot_role):
+    #     user_ok = True
 
     if name == CONFIG_SUPER_ADMIN_USER and super_admin:
         user_ok = True
