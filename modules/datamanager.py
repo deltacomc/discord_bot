@@ -543,7 +543,7 @@ class ScumLogDataManager:
             self.raw(query)
         else:
             query = "UPDATE fame SET "
-            query += f"points = {_data['points']} WHERE"
+            query += f"points = {_data['points']} WHERE "
             query += f"steamid={_data['steamid']}"
             self.raw(query)
 
@@ -555,7 +555,7 @@ class ScumLogDataManager:
         query = f"SELECT steamid from player where name = '{name}'"
         sel = self.raw(query)
         if len(sel) == 0:
-            query = f"SELECT * from fame where steamid = {sel['steamid']}"
+            query = f"SELECT * from fame where steamid=={sel['steamid']}"
             sel_points = self.raw(query)
             retval.update({
                 name: sel_points["points"]
@@ -564,7 +564,7 @@ class ScumLogDataManager:
 
     def update_guild_member(self, _id: int, name: str, guild_role: str, bot_role: str) -> None:
         """ Update guild members"""
-        query = f"SELECT * FROM guild_members WHERE id={_id}"
+        query = f"SELECT * FROM guild_members WHERE id=={_id}"
         res = self.raw(query)
         if len(res) == 0:
             query = "INSERT INTO guild_members (id, name, roles, bot_role)"
@@ -572,7 +572,7 @@ class ScumLogDataManager:
         else:
             query = "UPDATE guild_members SET"
             query += f" roles='{guild_role}', bot_role='{bot_role}'"
-            query += f" WHERE id='{_id}'"
+            query += f" WHERE id=='{_id}'"
 
         self.raw(query)
         self.db.commit()
@@ -581,7 +581,7 @@ class ScumLogDataManager:
         """ get guild members"""
         retval = {}
         if name != "":
-            query = f"SELECT * FROM guild_members WHERE name='{name}'"
+            query = f"SELECT * FROM guild_members WHERE name=='{name}'"
         else:
             query = "SELECT * FROM guild_members"
 
