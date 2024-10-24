@@ -200,7 +200,7 @@ def _check_user_bot_role(name: str, bot_role: str, super_admin: bool = False):
     # if len(user) == 0:
     #     if name == CONFIG_SUPER_ADMIN_USER and super_admin:
     #         return True
-    #     # user not in DB so return 
+    #     # user not in DB so return
     #     else:
     #         return False
 
