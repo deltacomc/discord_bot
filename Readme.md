@@ -20,6 +20,8 @@ preliminary readme
        -> <age> can be in days or month (e.g. !audit 14d, !audit 3m)
        -> Can only be called by users with role CONFIG_SUPER_ADMIN_ROLE
        -> Can be used via DM by user BOT_SUPER_ADMIN_USER
+    * !debug <cmd> - Debug commands, when enabled no rights restrictions are applied!!!
+        - dump_all - Dumps config, member database and environment
 
 ## configure env-file
 ```
@@ -51,6 +53,8 @@ BOT_ADMIN_USER= # User who can invoke config command via DM
 BOT_SUPER_ADMIN_ROLE= # Users with super admin role can invoke audit command
 BOT_SUPER_ADMIN_USER= # Super admin who can invoke audit command via DM
 
+EXPERIMENTAL_ENABLE= # Enable experimental and debug features (default: disabled)
+                     # Valid value to enable => 1
 ```
 
 ## Build and run docker
