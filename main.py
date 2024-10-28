@@ -44,6 +44,7 @@ LOG_DIRECTORY = os.getenv("LOG_DIRECTORY")
 DATABASE_FILE = os.getenv("DATABASE_FILE")
 LOG_CHECK_INTERVAL = os.getenv("LOG_CHECK_INTERVAL")
 HELP_COMMAND = os.getenv("BOT_HELP_COMMAND")
+CONFIG_EXPERIMENTAL = os.getenv("EXPERIMENTAL_ENABLE")
 
 if os.getenv("BOT_USER_ADMIN_ROLE") is not None:
     CONFIG_ADMIN_ROLE = os.getenv("BOT_USER_ADMIN_ROLE")
@@ -57,6 +58,34 @@ CONFIG_SUPER_ADMIN_ROLE = os.getenv("BOT_SUPER_ADMIN_ROLE")
 CONFIG_SUPER_ADMIN_USER = os.getenv("BOT_SUPER_ADMIN_USER")
 
 CONFIG_USER_ROLE = os.getenv("BOT_USER_ROLE")
+
+
+ENV_AVAILABLE_KEYS = [
+    "DISCORD_TOKEN",
+    "DISCORD_GUILD",
+    "SFTP_HOST",
+    "SFTP_PORT",
+    "SFTP_USERNAME",
+    "DEBUG_CHANNEL",
+    "SCUM_LOG_FEED_CHANNEL",
+    "LOG_DIRECTORY",
+    "DATABASE_FILE",
+    "LOG_CHECK_INTERVAL",
+    "BOT_HELP_COMMAND",
+    "EXPERIMENTAL_ENABLE",
+    "BOT_USER_ADMIN_ROLE",
+    "BOT_ADMIN_ROLE",
+    "BOT_ADMIN_USER",
+    "BOT_SUPER_ADMIN_ROLE",
+    "BOT_SUPER_ADMIN_USER",
+    "BOT_USER_ROLE"
+]
+
+if CONFIG_EXPERIMENTAL:
+    if CONFIG_EXPERIMENTAL == "1":
+        CONFIG_EXPERIMENTAL = True
+    else:
+        CONFIG_EXPERIMENTAL = False
 
 if CONFIG_ADMIN_ROLE is None:
     CONFIG_ADMIN_ROLE = 'sbot_admin'
@@ -197,15 +226,15 @@ def _check_user_bot_role(name: str, bot_role: str, super_admin: bool = False):
     user_ok = False
     print(user)
 
-    # if len(user) == 0:
-    #     if name == CONFIG_SUPER_ADMIN_USER and super_admin:
-    #         return True
-    #     # user not in DB so return
-    #     else:
-    #         return False
+    if len(user) == 0:
+        if name == CONFIG_SUPER_ADMIN_USER and super_admin:
+            return True
+        # user not in DB so return
+        else:
+            return False
 
-    # if BOT_ROLES.index(user[name]['bot_role']) >= BOT_ROLES.index(bot_role):
-    #     user_ok = True
+    if BOT_ROLES.index(user[name]['bot_role']) >= BOT_ROLES.index(bot_role):
+        user_ok = True
 
     if name == CONFIG_SUPER_ADMIN_USER and super_admin:
         user_ok = True
@@ -371,7 +400,18 @@ async def load_guild_members(db: ScumLogDataManager):
     current_members = db.get_guild_member()
     logging.info("Updating guild members.")
     for guild in client.guilds:
-        if guild.name == GUILD:
+        if guild.name == GUILD or guild.id == GUILD:
+            if guild.owner.name not in current_members:
+                current_members.update({
+                    guild.owner.name: {
+                        "id": guild.owner.id,
+                        "guild_role": "",
+                        "bot_role": "owner"
+                    }
+                })
+                db.update_guild_member(guild.owner.id, guild.owner.name,
+                    "", "owner")
+
             for member in guild.members:
                 update_member = False
                 roles= []
@@ -452,6 +492,31 @@ async def on_loop_error(error):
         log_parser_loop.restart()
     else:
         pass
+
+@client.command(name="debug")
+async def command_debug(ctx, *args):
+    if not CONFIG_EXPERIMENTAL:
+        return
+    db = ScumLogDataManager(DATABASE_FILE)
+    if args[0] == "dump_all":
+        await ctx.author.send("Current configuration")
+        msg = ""
+        for cfg in config.items():
+            msg += f"{cfg[0]}: {cfg[1]}\n"
+        await ctx.author.send(msg)
+
+        await ctx.author.send("Members stored in DB.")
+        members = db.get_guild_member()
+        msg_str = ""
+        for member in members:
+            msg_str += f"{member} - Discord Role: {members[member]['guild_role']}"
+            msg_str += f" - Bot Role: {members[member]['bot_role']}\n"
+        await ctx.author.send(msg_str)
+
+        await ctx.author.send("Current Environment")
+        for key,value in os.environ.items():
+            if key in ENV_AVAILABLE_KEYS:
+                await ctx.author.send(f"{key}: {value}")
 
 @client.command(name="member")
 async def command_member(ctx, *args):
