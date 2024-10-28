@@ -214,8 +214,38 @@ def _get_date_for_age(in_sec: int) -> datetime:
     return datetime.today() - timedelta(days=in_sec)
 
 async def _reply(context, msg) -> None:
-    if config["reply"] == "same_channel":
-        await context.reply(msg)
+    if len(msg) > MAX_MESSAGE_LENGTH:
+        chunks = []
+        chunk = ""
+        for line in msg.split("\n"):
+            if len(chunk) + len(line) < MAX_MESSAGE_LENGTH:
+                chunk += f"{line}\n"
+            else:
+                chunks.append(chunk)
+                chunk = f"{line}\n"
+        for _chunk in chunks:
+            if config["reply"] == "same_channel":
+                await context.reply(_chunk)
+            else:
+                await context.author.send(_chunk)
+    else:
+        if config["reply"] == "same_channel":
+            await context.reply(msg)
+        else:
+            await context.author.send(msg)
+
+async def _reply_author(context, msg) -> None:
+    if len(msg) > MAX_MESSAGE_LENGTH:
+        chunks = []
+        chunk = ""
+        for line in msg.split("\n"):
+            if len(chunk) + len(line) < MAX_MESSAGE_LENGTH:
+                chunk += f"{line}\n"
+            else:
+                chunks.append(chunk)
+                chunk = f"{line}\n"
+        for _chunk in chunks:
+            await context.author.send(_chunk)
     else:
         await context.author.send(msg)
 
@@ -237,25 +267,6 @@ def _check_user_bot_role(name: str, bot_role: str, super_admin: bool = False):
 
     if name == CONFIG_SUPER_ADMIN_USER and super_admin:
         user_ok = True
-
-    # if name == CONFIG_ADMIN_USER and admin:
-    #     user_ok = True
-
-    # for role in roles:
-    #     _roles.append(role.name)
-    #     if CONFIG_ADMIN_ROLE in _roles:
-    #         user_ok = True
-
-    # for role in roles:
-    #     _roles.append(role.name)
-    #     if CONFIG_USER_ROLE in _roles:
-    #         user_ok = True
-
-    # for role in roles:
-    #     _roles.append(role.name)
-
-    #     if CONFIG_SUPER_ADMIN_ROLE in _roles:
-    #         user_ok = True
 
     return user_ok
 
@@ -494,28 +505,32 @@ async def on_loop_error(error):
 
 @client.command(name="debug")
 async def command_debug(ctx, *args):
+    """some debug functions"""
     if not CONFIG_EXPERIMENTAL:
         return
     db = ScumLogDataManager(DATABASE_FILE)
     if args[0] == "dump_all":
-        await ctx.author.send("Current configuration")
-        msg = ""
+        await _reply_author(ctx, "Current configuration")
+        msg_str = ""
         for cfg in config.items():
-            msg += f"{cfg[0]}: {cfg[1]}\n"
-        await ctx.author.send(msg)
+            msg_str += f"{cfg[0]}: {cfg[1]}\n"
+        await _reply_author(ctx, msg_str)
 
-        await ctx.author.send("Members stored in DB.")
+        await _reply_author(ctx, "Members stored in DB.")
         members = db.get_guild_member()
         msg_str = ""
-        for member in members:
-            msg_str += f"{member} - Discord Role: {members[member]['guild_role']}"
-            msg_str += f" - Bot Role: {members[member]['bot_role']}\n"
-        await ctx.author.send(msg_str)
+        for member, member_data in members.items():
+            msg_str += f"{member} - Discord Role: {member_data['guild_role']}"
+            msg_str += f" - Bot Role: {member_data['bot_role']}\n"
+        await _reply_author(ctx, msg_str)
 
-        await ctx.author.send("Current Environment")
+        await _reply_author(ctx, "Current Environment")
+        msg_str = ""
         for key,value in os.environ.items():
             if key in ENV_AVAILABLE_KEYS:
-                await ctx.author.send(f"{key}: {value}")
+                msg_str += f"{key}: {value}\n"
+
+        await _reply_author(ctx, msg_str)
 
 @client.command(name="member")
 async def command_member(ctx, *args):
@@ -536,28 +551,44 @@ async def command_member(ctx, *args):
 
     elif len(args) == 1:
         members = db.get_guild_member(args[0])
-        msg_str = "Current members in database:\n"
-        for member in members:
-            msg_str += f"{member} - Discord Role: {members[member]['guild_role']}"
-            msg_str += f" - Bot Role: {members[member]['bot_role']}\n"
+        if len(members) < 1:
+            msg_str = "No members stored in Database"
+        else:
+            msg_str = "Current members in database:\n"
+            for member in members:
+                msg_str += f"{member} - Discord Role: {members[member]['guild_role']}"
+                msg_str += f" - Bot Role: {members[member]['bot_role']}\n"
 
     elif len(args) == 2:
         # set bot_role of memeber
         member = db.get_guild_member(args[0])
-        if member[0]["bot_role"] == args[1]:
-            msg_str = f"Member {args[0]} already has bot role {args[1]}"
+        if len(member) < 1:
+            if ctx.guild:
+                for _member in ctx.guild.members:
+                    if _member.name == args[0]:
+                        msg_str = f"Member {args[0]} given bot role {args[1]}"
+                        db.update_guild_member(_member.id,args[0],
+                                                   ",".join(_member.roles),args[1])
+                if len(msg_str) == 0:
+                    msg_str = f"Member {args[0]} does not exist on Server."
+            else:
+                msg_str = f"Member {args[0]} not in database. Can't create member via DM."
         else:
-            msg_str = f"Member {args[0]} given bot role {args[1]}"
-            db.update_guild_member(member[args[0]]['id'],member[args[0]]['name'],
-                                   member[args[0]]['guild_role'],args[1])
+            print(member)
+            if member[args[0]]["bot_role"] == args[1]:
+                msg_str = f"Member {args[0]} already has bot role {args[1]}"
+            else:
+                msg_str = f"Member {args[0]} given bot role {args[1]}"
+                db.update_guild_member(member[args[0]]['id'],args[0],
+                                       member[args[0]]['guild_role'],args[1])
 
     else:
-        await ctx.author.send("Too many arguments for command 'member'")
+        await _reply_author(ctx, "Too many arguments for command 'member'")
 
     if len(msg_str) > 0:
-        await ctx.author.send(msg_str)
+        await _reply_author(ctx, msg_str)
     else:
-        await ctx.author.send("No members in database!")
+        await _reply_author(ctx, "No members in database!")
     # pylint: enable=consider-using-dict-items
 
 async def handle_command_audit(ctx, args):
@@ -603,11 +634,11 @@ async def handle_command_audit(ctx, args):
                     chunk = f"{line}\n"
 
             for _chunk in chunks:
-                await ctx.author.send(_chunk)
+                await _reply_author(ctx, _chunk)
         else:
-            await ctx.author.send(msg_str)
+            await _reply_author(ctx, msg_str)
     else:
-        await ctx.author.send("No entries in audit!")
+        await _reply_author(ctx, "No entries in audit!")
 
 @client.command(name="audit")
 async def command_audit(ctx, *args):
@@ -637,12 +668,12 @@ async def handle_command_config(ctx, args):
         msg = "Current config:\n"
         for cfg in config.items():
             msg += f"{cfg[0]}: {cfg[1]}\n"
-        await ctx.author.send(msg)
+        await _reply_author(ctx, msg)
         return
 
     if args[0] == "reply":
         if len(args) < 2:
-            await ctx.send("Missing arguments.")
+            await _reply(ctx, "Missing arguments.")
         else:
             if args[1] == "private":
                 config.update({"reply": "private"})
@@ -651,7 +682,7 @@ async def handle_command_config(ctx, args):
 
     if args[0] == "publish_login":
         if len(args) < 2:
-            await ctx.send("Missing arguments.")
+            await _reply(ctx, "Missing arguments.")
         else:
             if args[1].lower() == "true" or args[1] == "1":
                 config.update({"publish_login": True})
@@ -660,7 +691,7 @@ async def handle_command_config(ctx, args):
 
     if args[0] == "publish_bunkers":
         if len(args) < 2:
-            await ctx.send("Missing arguments.")
+            await _reply(ctx, "Missing arguments.")
         else:
             if args[1].lower() == "true" or args[1] == "1":
                 config.update({"publish_bunkers": True})
@@ -669,7 +700,7 @@ async def handle_command_config(ctx, args):
 
     if args[0] == "publish_kills":
         if len(args) < 2:
-            await ctx.send("Missing arguments.")
+            await _reply(ctx, "Missing arguments.")
         else:
             if args[1].lower() == "true" or args[1] == "1":
                 config.update({"publish_kills": True})
@@ -678,7 +709,7 @@ async def handle_command_config(ctx, args):
 
     if args[0] == "publish_admin_log":
         if len(args) < 2:
-            await ctx.send("Missing arguments.")
+            await _reply(ctx, "Missing arguments.")
         else:
             if args[1].lower() == "true" or args[1] == "1":
                 config.update({"publish_admin_log": True})
@@ -686,7 +717,7 @@ async def handle_command_config(ctx, args):
                 config.update({"publish_admin_log": False})
 
     logging.info(f"Updated config: {args[0]} = {config[args[0]]}")
-    await ctx.author.send(f"Saved config: {args[0]} = {config[args[0]]}")
+    await _reply_author(ctx, f"Saved config: {args[0]} = {config[args[0]]}")
     db.save_config(config)
 
 @client.command(name="config")
@@ -894,37 +925,6 @@ async def bot_help(ctx):
     msg_str += "from the SCUM Server."
 
     await _reply(ctx, msg_str)
-
-@client.command(name='99')
-@commands.has_role(CONFIG_USER_ROLE)
-async def nine_nine(ctx):
-    """Print a quote from Brookly 9-9"""
-    brooklyn_99_quotes = [
-        'I\'m the human form of the 💯 emoji.',
-        'Bingpot!',
-        (
-            'Cool. Cool cool cool cool cool cool cool, '
-            'no doubt no doubt no doubt no doubt.'
-        ),
-    ]
-
-    response = random.choice(brooklyn_99_quotes)
-    await _reply(ctx, response)
-
-@client.command(name='\\/')
-async def spock(ctx):
-    """Function post a Star Trek quote"""
-    star_trek_quotes = [
-        'Live long and prosper',
-        'To boldly go where no one has gone before',
-        (
-            'Heading,  '
-            'the third star from the left and follow the bow!'
-        ),
-    ]
-
-    response = random.choice(star_trek_quotes)
-    await _reply(ctx, response)
 
 @client.command(name='roll_dice', help='Simulates rolling dice.')
 async def roll(ctx, number_of_dice: int, number_of_sides: int):
