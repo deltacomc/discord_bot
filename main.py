@@ -174,7 +174,7 @@ async def on_ready():
         logging.info("Starting main loop.")
         heartbeat = datetime.now()
         log_parser_loop.start()
-    
+
     if not watchdog.is_running():
         logging.info("Starting main loop watchdog.")
         watchdog.start()
@@ -220,6 +220,9 @@ def _convert_time(in_sec: int) -> str:
 
 def _get_date_for_age(in_sec: int) -> datetime:
     return datetime.today() - timedelta(days=in_sec)
+
+def _get_timestamp(self, string):
+    return datetime.strptime(string, "%Y.%m.%d-%H.%M.%S").timestamp()
 
 async def _reply(context, msg) -> None:
     if len(msg) > MAX_MESSAGE_LENGTH:
@@ -302,7 +305,8 @@ async def handle_login(msgs, file, dbconnection):
                         msg_str += f"Y={msg['coordinates']['y']} Z={msg['coordinates']['z']}]"
                         msg_str += f"(https://scum-map.com/en/map/place/{msg['coordinates']['x']}"
                         msg_str += f",{msg['coordinates']['y']},3)"
-                        if config["publish_login"]:
+                        if config["publish_login"] and \
+                            (datetime.now().timestamp() - _get_timestamp(msg['timestamp']) < 600):
                             await channel.send(msg_str)
 
                 if msg and dbconnection.check_message_send(msg["hash"]):
@@ -409,8 +413,8 @@ async def handle_admin_log(msgs, file, dbconnection):
                     dbconnection.update_admin_audit(msg)
                     if config["publish_admin_log"]:
                         channel = client.get_channel(int(LOG_FEED_CHANNEL))
-                        msg_str = f"Admin: {msg['name']} has used: {msg['type']} "
-                        msg_str += f"command with action {msg['action']}"
+                        msg_str = f"Admin: @{msg['timestamp']} {msg['name']} has used: "
+                        msg_str += f"{msg['type']} command with action {msg['action']}"
                         await channel.send(msg_str)
 
 async def load_guild_members(db: ScumLogDataManager):
