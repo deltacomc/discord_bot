@@ -480,6 +480,9 @@ async def load_guild_members(db: ScumLogDataManager):
 async def watchdog():
     logging.info("Watchdog execute.")
     _now = datetime.now()
+    print(_now)
+    print(heartbeat)
+    print(_now.timestamp() - heartbeat.timestamp())
     if _now.timestamp() - heartbeat.timestamp() > LOG_CHECK_INTERVAL * 5:
         logging.error(f"Main loop not running for {LOG_CHECK_INTERVAL * 5} seconds. \
                       Attempting to restart.")
@@ -494,6 +497,7 @@ async def watchdog():
 @tasks.loop(seconds=LOG_CHECK_INTERVAL)
 async def log_parser_loop():
     """Loop to parse logfiles and handle outputs"""
+    global heartbeat
     db = ScumLogDataManager(DATABASE_FILE)
     await client.wait_until_ready()
     msgs = lp.scum_log_parse()
@@ -519,6 +523,7 @@ async def log_parser_loop():
         db.discard_old_admin_audtis(60*86400)
     db.close()
     heartbeat = datetime.now()
+    print(heartbeat)
 
 @log_parser_loop.error
 async def on_loop_error(error):
