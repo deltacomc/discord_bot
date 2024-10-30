@@ -221,7 +221,7 @@ def _convert_time(in_sec: int) -> str:
 def _get_date_for_age(in_sec: int) -> datetime:
     return datetime.today() - timedelta(days=in_sec)
 
-def _get_timestamp(self, string):
+def _get_timestamp(string):
     return datetime.strptime(string, "%Y.%m.%d-%H.%M.%S").timestamp()
 
 async def _reply(context, msg) -> None:
