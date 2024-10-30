@@ -146,6 +146,7 @@ logging = Output()
 async def on_ready():
     """Function is called when bot is ready"""
     global lp
+    global heartbeat
     guild = None
     for guild in client.guilds:
         if guild.name == GUILD:
@@ -478,6 +479,7 @@ async def load_guild_members(db: ScumLogDataManager):
 
 @tasks.loop(seconds=60)
 async def watchdog():
+    """A watchdog for the main loop"""
     logging.info("Watchdog execute.")
     _now = datetime.now()
     print(_now)
