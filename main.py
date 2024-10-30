@@ -130,6 +130,8 @@ BOT_ROLES = [
 
 MAX_MESSAGE_LENGTH = 1000
 
+heartbeat = datetime.now()
+
 config = DEFAULT_CONFIG
 intents = discord.Intents.default()
 intents.message_content = True
@@ -169,7 +171,13 @@ async def on_ready():
 
     # Start the loop that checks log files periodically
     if not log_parser_loop.is_running():
+        logging.info("Starting main loop.")
+        heartbeat = datetime.now()
         log_parser_loop.start()
+    
+    if not watchdog.is_running():
+        logging.info("Starting main loop watchdog.")
+        watchdog.start()
 
 def _load_config() -> None:
     global config
@@ -464,6 +472,21 @@ async def load_guild_members(db: ScumLogDataManager):
 
             break
 
+@tasks.loop(seconds=60)
+async def watchdog():
+    logging.info("Watchdog execute.")
+    _now = datetime.now()
+    if _now.timestamp() - heartbeat.timestamp() > LOG_CHECK_INTERVAL * 5:
+        logging.error(f"Main loop not running for {LOG_CHECK_INTERVAL * 5} seconds. \
+                      Attempting to restart.")
+
+        if log_parser_loop.is_running():
+            logging.error("Main loop was still running, restart main loop.")
+            log_parser_loop.restart()
+        else:
+            logging.error("Main loop was dead. Starting main loop.")
+            log_parser_loop.start()
+
 @tasks.loop(seconds=LOG_CHECK_INTERVAL)
 async def log_parser_loop():
     """Loop to parse logfiles and handle outputs"""
@@ -491,6 +514,7 @@ async def log_parser_loop():
         db.discard_aged_messages(30*86400)
         db.discard_old_admin_audtis(60*86400)
     db.close()
+    heartbeat = datetime.now()
 
 @log_parser_loop.error
 async def on_loop_error(error):
