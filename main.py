@@ -265,7 +265,6 @@ def _check_user_bot_role(name: str, bot_role: str, super_admin: bool = False):
     db = ScumLogDataManager(DATABASE_FILE)
     user = db.get_guild_member(name)
     user_ok = False
-    print(user)
 
     if len(user) == 0:
         if name == CONFIG_SUPER_ADMIN_USER and super_admin:
@@ -482,9 +481,6 @@ async def watchdog():
     """A watchdog for the main loop"""
     logging.info("Watchdog execute.")
     _now = datetime.now()
-    print(_now)
-    print(heartbeat)
-    print(_now.timestamp() - heartbeat.timestamp())
     if _now.timestamp() - heartbeat.timestamp() > LOG_CHECK_INTERVAL * 5:
         logging.error(f"Main loop not running for {LOG_CHECK_INTERVAL * 5} seconds. \
                       Attempting to restart.")
@@ -525,7 +521,6 @@ async def log_parser_loop():
         db.discard_old_admin_audtis(60*86400)
     db.close()
     heartbeat = datetime.now()
-    print(heartbeat)
 
 @log_parser_loop.error
 async def on_loop_error(error):
@@ -536,7 +531,10 @@ async def on_loop_error(error):
     elif log_parser_loop.failed and log_parser_loop.is_running():
         log_parser_loop.restart()
     else:
-        pass
+        if not log_parser_loop.is_running():
+            log_parser_loop.start()
+        elif log_parser_loop.is_running():
+            log_parser_loop.restart()
 
 @client.command(name="debug")
 async def command_debug(ctx, *args):
@@ -609,7 +607,6 @@ async def command_member(ctx, *args):
             else:
                 msg_str = f"Member {args[0]} not in database. Can't create member via DM."
         else:
-            print(member)
             if member[args[0]]["bot_role"] == args[1]:
                 msg_str = f"Member {args[0]} already has bot role {args[1]}"
             else:
