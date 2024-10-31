@@ -78,10 +78,11 @@ class ScumSFTPLogParser:
 
             self.connect_sftp_p = self.connect_p.open_sftp()
         except paramiko.ssh_exception.SSHException as e:
-            self.logging.error(f"SSHException catched. Message print {e}")
+            self.logging.error(f"SSHException catched. Message print {str(e)}")
             self.connect_p = None
         except Exception as e:
-            self.logging.error(f"Unspecified exception catched. Message print {e}")
+            self.logging.error("Unspecified exception catched. " + \
+                               f"Message print {str(e.with_traceback())}")
             self.connect_p = None
 
     def _check_transport_alive(self):
@@ -99,7 +100,7 @@ class ScumSFTPLogParser:
             else:
                 ret_val = False
         except EOFError as e:
-            self.logging.error(e)
+            self.logging.error(str(e))
             self.connect_p.close()
             ret_val = False
 
@@ -124,7 +125,7 @@ class ScumSFTPLogParser:
         except paramiko.ssh_exception.SSHException as e:
             # Something went wrong with the connection
             # Try to reopen and rety
-            self.logging.error(e)
+            self.logging.error(str(e))
             self._open_connection()
             if not self._retry and self.connect_p is not None:
                 self._retry = True
