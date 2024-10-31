@@ -149,7 +149,8 @@ async def on_ready():
     global heartbeat
     guild = None
     for guild in client.guilds:
-        if GUILD in (guild.name, guild.id):
+        if GUILD in (guild.name, str(guild.id)):
+            print("found")
             break
 
     if guild is not None:
@@ -422,7 +423,7 @@ async def load_guild_members(db: ScumLogDataManager):
     current_members = db.get_guild_member()
     logging.info("Updating guild members.")
     for guild in client.guilds:
-        if GUILD in (guild.name, guild.id):
+        if GUILD in (guild.name, str(guild.id)):
             if guild.owner.name not in current_members:
                 current_members.update({
                     guild.owner.name: {
