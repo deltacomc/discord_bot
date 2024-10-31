@@ -40,6 +40,9 @@ steps:
       registry: registry.nbg.bufanda.de
       autotag: yes
       insecure: yes
+      tags:
+        - ${DRONE_TAG}
+        - latest
     when:
       event:
         - tag
