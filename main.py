@@ -425,9 +425,7 @@ async def handle_admin_log(msgs, file, dbconnection):
                     dbconnection.update_admin_audit(msg)
                     if config["publish_admin_log"]:
                         channel = client.get_channel(int(LOG_FEED_CHANNEL))
-                        print(msg)
-                        timestamp = datetime.now().strftime("DD.MM.YYYY - hh:mm:ss")
-                        msg_str = f"Admin: @{timestamp} {msg['name']} has used: "
+                        msg_str = f"Admin: @{msg['time']} {msg['name']} has used: "
                         msg_str += f"{msg['type']} command with action {msg['action']}"
                         await channel.send(msg_str)
 
