@@ -812,12 +812,12 @@ async def command_config(ctx, *args):
 
 
 @client.command(name="lifetime")
-@commands.has_role(CONFIG_USER_ROLE)
 async def command_lifetime(ctx, player: str = None):
     """Command to check server liftime of players"""
     msg_str = None
 
-    if not _check_user_bot_role(ctx.author.name, "user"):
+    if not _check_user_bot_role(ctx.author.name, "user") and not \
+        _check_guild_roles(CONFIG_USER_ROLE):
         await ctx.reply("You do not have permission to invoke this command.")
         return
 
@@ -846,7 +846,8 @@ async def command_bunkers(ctx, bunker: str = None):
     """Command to check Active bunkers"""
     msg_str = None
 
-    if not _check_user_bot_role(ctx.author.name, "user"):
+    if not _check_user_bot_role(ctx.author.name, "user") and not \
+        _check_guild_roles(CONFIG_USER_ROLE):
         await ctx.reply("You do not have permission to invoke this command.")
         return
 
@@ -893,7 +894,8 @@ async def player_online(ctx, player: str = None):
     """Command to check if player is online"""
     message = ""
 
-    if not _check_user_bot_role(ctx.author.name, "user"):
+    if not _check_user_bot_role(ctx.author.name, "user") and not \
+        _check_guild_roles(CONFIG_USER_ROLE):
         await ctx.reply("You do not have permission to invoke this command.")
         return
 
@@ -940,7 +942,8 @@ async def player_lastseen(ctx, player: str):
     """Function to check last seen of a player"""
     message = ""
 
-    if not _check_user_bot_role(ctx.author.name, "user"):
+    if not _check_user_bot_role(ctx.author.name, "user") and not \
+        _check_guild_roles(CONFIG_USER_ROLE):
         await ctx.reply("You do not have permission to invoke this command.")
         return
 
@@ -981,7 +984,8 @@ async def player_lastseen(ctx, player: str):
 async def bot_help(ctx):
     """Help command"""
 
-    if not _check_user_bot_role(ctx.author.name, "user"):
+    if not _check_user_bot_role(ctx.author.name, "user") and not \
+        _check_guild_roles(CONFIG_USER_ROLE):
         await ctx.reply("You do not have permission to invoke this command.")
         return
 
