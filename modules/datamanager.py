@@ -535,8 +535,6 @@ class ScumLogDataManager:
         """update fame points"""
         query = f"SELECT * from fame where steamid = {_data['steamid']}"
         sel = self.raw(query)
-        print(sel)
-        print(_data)
         if len(sel) == 0:
             query = "INSERT INTO fame (steamid, points) VALUES "
             query += f"({_data['steamid']}, {_data['points']})"
