@@ -984,11 +984,6 @@ async def player_lastseen(ctx, player: str):
 async def bot_help(ctx):
     """Help command"""
 
-    if not _check_user_bot_role(ctx.author.name, "user") and not \
-        _check_guild_roles(CONFIG_USER_ROLE):
-        await ctx.reply("You do not have permission to invoke this command.")
-        return
-
     msg_str = f"Hi, {ctx.author}. My Name is {client.user}.\n"
     msg_str += "You can call me with following commands:\n"
 
