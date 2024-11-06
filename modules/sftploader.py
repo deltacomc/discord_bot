@@ -28,7 +28,7 @@ class ScumSFTPLogParser:
     current_log = []
     current_timestamp = 0
     logdirectory = "/"
-    last_fetch_time = 0
+    last_fetch_time = datetime.fromtimestamp(0)
     file_groups = {}
     log_hashes: set
     log_file_hashes: dict
@@ -68,7 +68,7 @@ class ScumSFTPLogParser:
     def _open_connection(self):
         try:
             if self.debug_message is not None:
-                self.debug_message("Try to conect to SFTP-Server.....")
+                self.debug_message("Try to connect to SFTP-Server.....")
 
             self.connect_p = paramiko.SSHClient()
             self.connect_p.set_missing_host_key_policy(paramiko.AutoAddPolicy())

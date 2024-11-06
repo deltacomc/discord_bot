@@ -423,7 +423,10 @@ async def handle_admin_log(msgs, file, dbconnection):
                     logging.debug(f"Admin: {msg['name']} has called a type {msg['type']} command.")
                     dbconnection.store_message_send(msg["hash"])
                     dbconnection.update_admin_audit(msg)
-                    if config["publish_admin_log"]:
+                    print(config["publish_admin_log"])
+                    print(isinstance(config["publish_admin_log"], str))
+                    print(isinstance(config["publish_admin_log"], bool))
+                    if bool(config["publish_admin_log"]):
                         channel = client.get_channel(int(LOG_FEED_CHANNEL))
                         msg_str = f"Admin: @{msg['time']} {msg['name']} has used: "
                         msg_str += f"{msg['type']} command with action {msg['action']}"
