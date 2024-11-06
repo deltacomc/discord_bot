@@ -151,7 +151,7 @@ async def on_ready():
     guild = None
     for guild in client.guilds:
         if GUILD in (guild.name, str(guild.id)):
-            print("found")
+            # print("found")
             break
 
     if guild is not None:
@@ -423,10 +423,7 @@ async def handle_admin_log(msgs, file, dbconnection):
                     logging.debug(f"Admin: {msg['name']} has called a type {msg['type']} command.")
                     dbconnection.store_message_send(msg["hash"])
                     dbconnection.update_admin_audit(msg)
-                    print(config["publish_admin_log"])
-                    print(isinstance(config["publish_admin_log"], str))
-                    print(isinstance(config["publish_admin_log"], bool))
-                    if bool(config["publish_admin_log"]):
+                    if config["publish_admin_log"]:
                         channel = client.get_channel(int(LOG_FEED_CHANNEL))
                         msg_str = f"Admin: @{msg['time']} {msg['name']} has used: "
                         msg_str += f"{msg['type']} command with action {msg['action']}"
@@ -795,8 +792,6 @@ async def command_config(ctx, *args):
         for role in ctx.author.roles:
             roles.append(role.name)
 
-        print(roles)
-        print(CONFIG_ADMIN_ROLE)
         if CONFIG_ADMIN_ROLE in roles or \
            _check_user_bot_role(ctx.author.name, 'moderator', True):
             await handle_command_config(ctx, args)
@@ -804,9 +799,6 @@ async def command_config(ctx, *args):
             await ctx.reply("You do not have permission to execute this command.")
 
     else:
-        print(CONFIG_ADMIN_USER)
-        print(ctx.author.name)
-        print(CONFIG_ADMIN_USER == ctx.author.name)
         if CONFIG_ADMIN_USER == ctx.author.name or \
            _check_user_bot_role(ctx.author.name, 'moderator', True):
             await handle_command_config(ctx, args)

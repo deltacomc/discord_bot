@@ -146,7 +146,7 @@ class ScumLogDataManager:
         cursor = self.db.cursor()
         cursor.execute(f"SELECT hash FROM message_send WHERE hash = '{message_hash}'")
         if len(cursor.fetchall()) > 0:
-            print ("Hash already stored. Not updating database.")
+            self.logging.info ("Hash already stored. Not updating database.")
         else:
             cursor.execute(f"INSERT INTO message_send (hash, timestamp) VALUES ('{message_hash}', {datetime.timestamp(datetime.now())})")
             self.db.commit()
@@ -493,8 +493,13 @@ class ScumLogDataManager:
         reply = self.raw(query)
         retval = {}
         for item in reply:
-            retval.update({item[0]: item[1]})
-
+            if item[0] == "reply":
+                retval.update({item[0]: item[1]})
+            else:
+                if item[1] == "True":
+                    retval.update({item[0]: True})
+                else: 
+                    retval.update({item[0]: False})
         return retval
 
     def update_admin_audit(self, audit_data: dict) -> None:
