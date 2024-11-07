@@ -106,7 +106,7 @@ class ScumSFTPLogParser:
 
         return ret_val
 
-    def _retrieve_files(self):
+    async def _retrieve_files(self) -> None:
         self.logging.info(f"retrive file listing from server {self.sftp_server}")
         if self.connect_sftp_p is None or not self._check_connection_alive():
             self._open_connection()
@@ -134,7 +134,7 @@ class ScumSFTPLogParser:
                 # already tried once so we don't retry and continue
                 self._retry = False
 
-    def _retrive_file_content(self):
+    async def _retrive_file_content(self) -> dict:
         if self.connect_sftp_p is None or not self._check_connection_alive():
             self._open_connection()
         self.new_log_data = {}
@@ -205,10 +205,10 @@ class ScumSFTPLogParser:
         db.update_log_file_hash(_hash["hash"], _hash["name"])
         db.close()
 
-    def scum_log_parse(self) -> str:
+    async def scum_log_parse(self) -> str:
         """parse log"""
-        self._retrieve_files()
-        return self._retrive_file_content()
+        await self._retrieve_files()
+        return await self._retrive_file_content()
 
     def _debug_to_stdout(self, msg):
         self.logging.debug(msg)
