@@ -425,8 +425,9 @@ async def handle_admin_log(msgs, file, dbconnection):
                     dbconnection.update_admin_audit(msg)
                     if config["publish_admin_log"]:
                         channel = client.get_channel(int(LOG_FEED_CHANNEL))
-                        msg_str = f"Admin: @{msg['time']} {msg['name']} has used: "
-                        msg_str += f"{msg['type']} command with action {msg['action']}"
+                        msg_str = f"{msg['time']} - Admin: "
+                        msg_str += f"{msg['name']} invoked "
+                        msg_str += f"{msg['type']}: {msg['action']}\n"
                         await channel.send(msg_str)
 
 async def load_guild_members(db: ScumLogDataManager):
@@ -526,7 +527,7 @@ async def log_parser_loop():
     global heartbeat
     db = ScumLogDataManager(DATABASE_FILE)
     await client.wait_until_ready()
-    msgs = lp.scum_log_parse()
+    msgs = await lp.scum_log_parse()
     if len(msgs) > 0:
         for file_key in msgs:
             if "login" in file_key:
@@ -681,7 +682,7 @@ async def handle_command_audit(ctx, args):
         for a in audit:
             msg_str += f"{datetime.fromtimestamp(a['timestamp'],
                         local_timezone).strftime('%Y-%m-%d %H:%M:%S')}: "
-            msg_str += f"{a['username']} invokeed "
+            msg_str += f"{a['username']} invoked "
             msg_str += f"{a['type']}: {a['action']}\n"
     else:
         msg_str = "Command not supported!"
