@@ -219,11 +219,16 @@ async def handle_login(msgs, file, dbconnection):
                         player_data.append({'drone': False})
                     if not msg['drone'] and not player_data[0]['drone']:
                     # pylint: disable=line-too-long
-                        msg_str = f"Player: {msg['username']}, logged "
-                        msg_str += f"{msg['state']} @ [X={msg['coordinates']['x']} "
+                        if msg['state'] == "in": 
+                            log_msg = _("Player: {name}, logged in ").format(name=msg['username'])
+                        else: 
+                            log_msg = _("Player: {name}, logged out ").format(name=msg['username'])
+                        msg_str = log_msg
+                        msg_str += f"@ [X={msg['coordinates']['x']} "
                         msg_str += f"Y={msg['coordinates']['y']} Z={msg['coordinates']['z']}]"
                         msg_str += f"(https://scum-map.com/en/map/place/{msg['coordinates']['x']}"
                         msg_str += f",{msg['coordinates']['y']},3)"
+                        
                         if config.config["publish_login"] and \
                             (datetime.now().timestamp() - _get_timestamp(msg['timestamp']) < 600):
                             await channel.send(msg_str)
@@ -239,11 +244,11 @@ async def handle_kills(msgs, file, dbconnection):
     """function to construct and send kill messages"""
     channel = client.get_channel(int(config.log_feed_channel))
     player_insults = [
-        'bad boy',
-        'savage',
-        'bandit',
-        'hero',
-        'murderer'
+        _('bad boy'),
+        _('savage'),
+        _('bandit'),
+        _('hero'),
+        _('murderer')
     ]
 
     player_insult = random.choice(player_insults)
@@ -257,10 +262,10 @@ async def handle_kills(msgs, file, dbconnection):
                         weapon = WEAPON_LOOKUP[[msg["event"]["Weapon"]]]
                     else:
                         weapon = msg["event"]["Weapon"]
-                    msg_str = f"Player {msg['event']['Killer']['ProfileName']} "
-                    msg_str += f"was a {player_insult} "
-                    msg_str += f"and killed {msg['event']['Victim']['ProfileName']} "
-                    msg_str += f"with a {weapon}."
+                    msg_str = _("Player {killer} ").format(killer=msg['event']['Killer']['ProfileName'])
+                    msg_str += _("was a {playerinsult} ").format(playerinsult=player_insult)
+                    msg_str += _("and killed {victim} ").format(victim=msg['event']['Victim']['ProfileName'])
+                    msg_str += _("with a {weapon}.").format(weapon=weapon)
 
                     if config.config["publish_kills"]:
                         await channel.send(msg_str)
@@ -282,7 +287,7 @@ async def handle_bunkers(msgs, file, dbconnection):
                         bunker_data.append({"active": 0})
 
                     if msg["active"] and bunker_data[0]['active'] == 0:
-                        msg_str = f"Bunker {msg['name']} was activated. "
+                        msg_str = _("Bunker {name} was activated. ").format(name=msg['name'])
                         if len(msg["coordinates"]) != 0:
                             msg_str += f"Coordinates @ [X={msg['coordinates']['x']} "
                             msg_str += f"Y={msg['coordinates']['y']} "
@@ -298,8 +303,8 @@ async def handle_bunkers(msgs, file, dbconnection):
                             msg_str += f"{bunker_data[0]['coordinates']['x']}"
                             msg_str += f",{bunker_data[0]['coordinates']['y']},3)"
                         else:
-                            msg_str += "Bunker coordinates unkown, "
-                            msg_str += "it wasnt't discovered previously."
+                            msg_str += _("Bunker coordinates unkown, ")
+                            msg_str += _("it wasnt't discovered previously.")
                         if config.config["publish_bunkers"]:
                             await channel.send(msg_str)
                     dbconnection.update_bunker_status(msg)
@@ -333,7 +338,7 @@ async def handle_admin_log(msgs, file, dbconnection):
                     if config.config["publish_admin_log"]:
                         channel = client.get_channel(int(config.log_feed_channel))
                         msg_str = f"{msg['time']} - Admin: "
-                        msg_str += f"{msg['name']} invoked "
+                        msg_str += _("{name} invoked ").format(name=msg['name'])
                         msg_str += f"{msg['type']}: {msg['action']}\n"
                         await channel.send(msg_str)
 
@@ -479,13 +484,13 @@ async def command_debug(ctx, *args):
         return
     db = ScumLogDataManager(config.database_file)
     if args[0] == "dump_all":
-        await _reply_author(ctx, "Current configuration")
+        await _reply_author(ctx, _("Current configuration"))
         msg_str = ""
         for cfg in config.config.items():
             msg_str += f"{cfg[0]}: {cfg[1]}\n"
         await _reply_author(ctx, msg_str)
 
-        await _reply_author(ctx, "Members stored in DB.")
+        await _reply_author(ctx, _("Members stored in DB."))
         members = db.get_guild_member()
         msg_str = ""
         for member, member_data in members.items():
@@ -493,13 +498,13 @@ async def command_debug(ctx, *args):
             msg_str += f" - Bot Role: {member_data['bot_role']}\n"
         await _reply_author(ctx, msg_str)
 
-        await _reply_author(ctx, "Current Environment")
+        await _reply_author(ctx, _("Current Environment"))
         msg_str = ""
         for key,value in os.environ.items():
             if key in config.ENV_AVAILABLE_KEYS:
                 msg_str += f"{key}: {value}\n"
 
-        await _reply_author(ctx, "Guild members:")
+        await _reply_author(ctx, _("Guild members:"))
         for guild in client.guilds:
             if config.guild in (guild.name, guild.id):
                 await _reply_author(ctx, str(client.guild.members))
@@ -512,12 +517,12 @@ async def command_member(ctx, *args):
     db = ScumLogDataManager(config.database_file)
     msg_str = ""
     if not _check_user_bot_role(ctx.author.name, 'admin', True):
-        await ctx.reply("You don't have permission to invoke this command.")
+        await ctx.reply(_("You don't have permission to invoke this command."))
         return
 
     if len(args) == 0:
         members = db.get_guild_member()
-        msg_str = "Current members in database:\n"
+        msg_str = _("Current members in database:\n")
         for member in members:
             msg_str += f"{member} - Discord Role: {members[member]['guild_role']}"
             msg_str += f" - Bot Role: {members[member]['bot_role']}\n"
@@ -525,9 +530,9 @@ async def command_member(ctx, *args):
     elif len(args) == 1:
         members = db.get_guild_member(args[0])
         if len(members) < 1:
-            msg_str = "No members stored in Database"
+            msg_str = _("No members stored in Database")
         else:
-            msg_str = "Current members in database:\n"
+            msg_str = _("Current members in database:\n")
             for member in members:
                 msg_str += f"{member} - Discord Role: {members[member]['guild_role']}"
                 msg_str += f" - Bot Role: {members[member]['bot_role']}\n"
@@ -539,28 +544,28 @@ async def command_member(ctx, *args):
             if ctx.guild:
                 for _member in ctx.guild.members:
                     if _member.name == args[0]:
-                        msg_str = f"Member {args[0]} given bot role {args[1]}"
+                        msg_str = _("Member {name} given bot role {role}").format(name=args[0], role=args[1])
                         db.update_guild_member(_member.id,args[0],
                                                    ",".join(_member.roles),args[1])
                 if len(msg_str) == 0:
-                    msg_str = f"Member {args[0]} does not exist on Server."
+                    msg_str = _("Member {name} does not exist on Server.").format(name=args[0])
             else:
-                msg_str = f"Member {args[0]} not in database. Can't create member via DM."
+                msg_str = _("Member {name} not in database. Can't create member via DM.").format(name=args[0])
         else:
             if member[args[0]]["bot_role"] == args[1]:
-                msg_str = f"Member {args[0]} already has bot role {args[1]}"
+                msg_str = _("Member {name} already has bot role {role}").format(name=args[0], role=args[1])
             else:
-                msg_str = f"Member {args[0]} given bot role {args[1]}"
+                msg_str = _("Member {args[0]} given bot role {args[1]}").format(name=args[0], role=args[1])
                 db.update_guild_member(member[args[0]]['id'],args[0],
                                        member[args[0]]['guild_role'],args[1])
 
     else:
-        await _reply_author(ctx, "Too many arguments for command 'member'")
+        await _reply_author(ctx, _("Too many arguments for command 'member'"))
 
     if len(msg_str) > 0:
         await _reply_author(ctx, msg_str)
     else:
-        await _reply_author(ctx, "No members in database!")
+        await _reply_author(ctx, _("No members in database!"))
     # pylint: enable=consider-using-dict-items
 
 async def handle_command_audit(ctx, args):
@@ -592,7 +597,7 @@ async def handle_command_audit(ctx, args):
             msg_str += f"{a['username']} invoked "
             msg_str += f"{a['type']}: {a['action']}\n"
     else:
-        msg_str = "Command not supported!"
+        msg_str = _("Command not supported!")
 
     if len(msg_str) > 0:
         if len(msg_str) > MAX_MESSAGE_LENGTH:
@@ -610,7 +615,7 @@ async def handle_command_audit(ctx, args):
         else:
             await _reply_author(ctx, msg_str)
     else:
-        await _reply_author(ctx, "No entries in audit!")
+        await _reply_author(ctx, _("No entries in audit!"))
 
 @client.command(name="audit")
 async def command_audit(ctx, *args):
@@ -624,14 +629,14 @@ async def command_audit(ctx, *args):
            _check_user_bot_role(ctx.author.name, 'admin', True):
             await handle_command_audit(ctx, args)
         else:
-            await ctx.reply("You have no permission to execute this command!")
+            await ctx.reply(_("You have no permission to execute this command!"))
 
     else:
         if config.super_admin_user == ctx.author.name or \
            _check_user_bot_role(ctx.author.name, 'admin', True):
             await handle_command_audit(ctx, args)
         else:
-            await ctx.reply("You have no permission to execute this command!")
+            await ctx.reply(_("You have no permission to execute this command!"))
 
 async def handle_command_config(ctx, args):
     """ ** """
@@ -645,7 +650,7 @@ async def handle_command_config(ctx, args):
 
     if args[0] == "reply":
         if len(args) < 2:
-            await _reply(ctx, "Missing arguments.")
+            await _reply(ctx, _("Missing arguments."))
         else:
             if args[1] == "private":
                 config.config.update({"reply": "private"})
@@ -654,7 +659,7 @@ async def handle_command_config(ctx, args):
 
     if args[0] == "publish_login":
         if len(args) < 2:
-            await _reply(ctx, "Missing arguments.")
+            await _reply(ctx, _("Missing arguments."))
         else:
             if args[1].lower() == "true" or args[1] == "1":
                 config.config.update({"publish_login": True})
@@ -663,7 +668,7 @@ async def handle_command_config(ctx, args):
 
     if args[0] == "publish_bunkers":
         if len(args) < 2:
-            await _reply(ctx, "Missing arguments.")
+            await _reply(ctx, _("Missing arguments."))
         else:
             if args[1].lower() == "true" or args[1] == "1":
                 config.config.update({"publish_bunkers": True})
@@ -672,7 +677,7 @@ async def handle_command_config(ctx, args):
 
     if args[0] == "publish_kills":
         if len(args) < 2:
-            await _reply(ctx, "Missing arguments.")
+            await _reply(ctx, _("Missing arguments."))
         else:
             if args[1].lower() == "true" or args[1] == "1":
                 config.config.update({"publish_kills": True})
@@ -681,7 +686,7 @@ async def handle_command_config(ctx, args):
 
     if args[0] == "publish_admin_log":
         if len(args) < 2:
-            await _reply(ctx, "Missing arguments.")
+            await _reply(ctx, _("Missing arguments."))
         else:
             if args[1].lower() == "true" or args[1] == "1":
                 config.config.update({"publish_admin_log": True})
@@ -704,14 +709,14 @@ async def command_config(ctx, *args):
            _check_user_bot_role(ctx.author.name, 'moderator', True):
             await handle_command_config(ctx, args)
         else:
-            await ctx.reply("You do not have permission to execute this command.")
+            await ctx.reply(_("You do not have permission to execute this command."))
 
     else:
         if config.admin_user == ctx.author.name or \
            _check_user_bot_role(ctx.author.name, 'moderator', True):
             await handle_command_config(ctx, args)
         else:
-            await ctx.reply("You do not have permission to execute this command.")
+            await ctx.reply(_("You do not have permission to execute this command."))
 
 
 @client.command(name="lifetime")
@@ -721,7 +726,7 @@ async def command_lifetime(ctx, player: str = None):
 
     if not _check_user_bot_role(ctx.author.name, "user") and not \
         _check_guild_roles(config.user_role):
-        await ctx.reply("You do not have permission to invoke this command.")
+        await ctx.reply(_("You do not have permission to invoke this command."))
         return
 
     db = ScumLogDataManager(config.database_file)
@@ -730,16 +735,16 @@ async def command_lifetime(ctx, player: str = None):
         player_stat = db.get_player_status(player)
         if len(player_stat) > 0:
             lifetime = _convert_time(player_stat[0]["lifetime"])
-            msg_str = f"Player {player} lives on server for {lifetime}."
+            msg_str = _("Player {player} lives on server for {lifetime}.").format(player=player, lifetime=lifetime)
         else:
-            msg_str = f"Player {player} has no life on this server."
+            msg_str = _("Player {player} has no life on this server.").format(player=player)
     else:
         logging.info("Getting all players that visited the server")
         player_stat = db.get_player_status()
-        msg_str = "Following players have a liftime on this server:\n"
+        msg_str = _("Following players have a liftime on this server:\n")
         for p in player_stat:
             lifetime = _convert_time(p["lifetime"])
-            msg_str += f"{p['name']} lives for {lifetime} on this server.\n"
+            msg_str += _("{name} lives for {lifetime} on this server.\n").format(name=p['name'], lifetime=lifetime)
 
     await _reply(ctx, msg_str)
     db.close()
@@ -751,7 +756,7 @@ async def command_bunkers(ctx, bunker: str = None):
 
     if not _check_user_bot_role(ctx.author.name, "user") and not \
         _check_guild_roles(config.user_role):
-        await ctx.reply("You do not have permission to invoke this command.")
+        await ctx.reply(_("You do not have permission to invoke this command."))
         return
 
     db = ScumLogDataManager(config.database_file)
@@ -760,34 +765,34 @@ async def command_bunkers(ctx, bunker: str = None):
         b = db.get_active_bunkers(bunker)
         if len(b) > 0:
             if b[0]["active"] == 0:
-                msg_str = f"Bunker {bunker} is not active."
+                msg_str = _("Bunker {bunker} is not active.").format(bunker=bunker)
                 if b[0]["next"] > 0:
                     _next = b[0]["timestamp"] + b[0]["next"]
                     msg_str += "\nWill be active @ "
                     msg_str += f"{datetime.fromtimestamp(_next).strftime('%d.%m.%Y - %H:%M:%S')}"
             else:
-                msg_str =f"Bunker {bunker} is active.\n"
+                msg_str =_("Bunker {bunker} is active.\n").format(bunker=bunker)
                 msg_str += f"@ [Coordinates X={b[0]['coordinates']['x']} "
                 msg_str += f"Y={b[0]['coordinates']['y']} "
                 msg_str += f"Z={b[0]['coordinates']['z']}]"
                 msg_str += f"(https://scum-map.com/en/map/place/{b[0]['coordinates']['x']}"
                 msg_str += f",{b[0]['coordinates']['y']},3)"
         else:
-            msg_str = f"Bunker {bunker} does not exist."
+            msg_str = _("Bunker {bunker} does not exist.").format(bunker=bunker)
     else:
         logging.info("No bunker given, will get all active bunkers.")
         b = db.get_active_bunkers(None)
         if len(b) > 0:
-            msg_str = "Following Bunkers are active.\n"
+            msg_str = _("Following Bunkers are active.\n")
             for bunk in b:
-                msg_str += f"Bunker {bunk['name']} is active.\n"
+                msg_str += _("Bunker {bunker} is active.\n").format(bunker=bunk['name'])
                 msg_str += f"@ [Coordinates X={bunk['coordinates']['x']} "
                 msg_str += f"Y={bunk['coordinates']['y']} "
                 msg_str += f"Z={bunk['coordinates']['z']}]"
                 msg_str += f"(https://scum-map.com/en/map/place/{b[0]['coordinates']['x']}"
                 msg_str += f",{b[0]['coordinates']['y']},3)\n"
         else:
-            msg_str = "No active bunkers found."
+            msg_str = _("No active bunkers found.")
 
     await _reply(ctx, msg_str)
     db.close()
@@ -799,7 +804,7 @@ async def player_online(ctx, player: str = None):
 
     if not _check_user_bot_role(ctx.author.name, "user") and not \
         _check_guild_roles(config.user_role):
-        await ctx.reply("You do not have permission to invoke this command.")
+        await ctx.reply(_("You do not have permission to invoke this command."))
         return
 
     local_timezone = ZoneInfo('Europe/Berlin')

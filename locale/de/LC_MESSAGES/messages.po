@@ -28,3 +28,181 @@ msgstr "{name}(id: {id})\n"
 #: main.py:91
 msgid "Starting log parser."
 msgstr "Starte log parser."
+
+#: main.py:223
+msgid "Player: {name}, logged in "
+msgstr "Spieler {name} hat sich eingeloggt "
+
+#: main.py:225
+msgid "Player: {name}, logged out "
+msgstr "Spieler {name} hat sich ausgeloggt"
+
+
+#: main.py:247
+msgid "bad boy"
+msgstr ""
+
+#: main.py:248
+msgid "savage"
+msgstr ""
+
+#: main.py:249
+msgid "bandit"
+msgstr ""
+
+#: main.py:250
+msgid "hero"
+msgstr ""
+
+#: main.py:251
+msgid "murderer"
+msgstr ""
+
+#: main.py:265
+msgid "Player {killer} "
+msgstr ""
+
+#: main.py:266
+msgid "was a {playerinsult} "
+msgstr ""
+
+#: main.py:267
+msgid "and killed {victim} "
+msgstr ""
+
+#: main.py:268
+msgid "with a {weapon}."
+msgstr ""
+
+#: main.py:290
+msgid "Bunker {name} was activated. "
+msgstr ""
+
+#: main.py:306
+msgid "Bunker coordinates unkown, "
+msgstr ""
+
+#: main.py:307
+msgid "it wasnt't discovered previously."
+msgstr ""
+
+#: main.py:341
+msgid "{name} invoked "
+msgstr ""
+
+#: main.py:487
+msgid "Current configuration"
+msgstr ""
+
+#: main.py:493
+msgid "Members stored in DB."
+msgstr ""
+
+#: main.py:501
+msgid "Current Environment"
+msgstr ""
+
+#: main.py:507
+msgid "Guild members:"
+msgstr ""
+
+#: main.py:520
+msgid "You don't have permission to invoke this command."
+msgstr ""
+
+#: main.py:525 main.py:535
+msgid "Current members in database:\n"
+msgstr ""
+
+#: main.py:533
+msgid "No members stored in Database"
+msgstr ""
+
+#: main.py:547
+msgid "Member {name} given bot role {role}"
+msgstr ""
+
+#: main.py:551
+msgid "Member {name} does not exist on Server."
+msgstr ""
+
+#: main.py:553
+msgid "Member {name} not in database. Can't create member via DM."
+msgstr ""
+
+#: main.py:556
+msgid "Member {name} already has bot role {role}"
+msgstr ""
+
+#: main.py:558
+msgid "Member {args[0]} given bot role {args[1]}"
+msgstr ""
+
+#: main.py:563
+msgid "Too many arguments for command 'member'"
+msgstr ""
+
+#: main.py:568
+msgid "No members in database!"
+msgstr ""
+
+#: main.py:600
+msgid "Command not supported!"
+msgstr ""
+
+#: main.py:618
+msgid "No entries in audit!"
+msgstr ""
+
+#: main.py:632 main.py:639
+msgid "You have no permission to execute this command!"
+msgstr ""
+
+#: main.py:653 main.py:662 main.py:671 main.py:680 main.py:689
+msgid "Missing arguments."
+msgstr ""
+
+#: main.py:712 main.py:719
+msgid "You do not have permission to execute this command."
+msgstr ""
+
+#: main.py:729 main.py:759 main.py:807
+msgid "You do not have permission to invoke this command."
+msgstr ""
+
+#: main.py:738
+msgid "Player {player} lives on server for {lifetime}."
+msgstr ""
+
+#: main.py:740
+msgid "Player {player} has no life on this server."
+msgstr ""
+
+#: main.py:744
+msgid "Following players have a liftime on this server:\n"
+msgstr ""
+
+#: main.py:747
+msgid "{name} lives for {lifetime} on this server.\n"
+msgstr ""
+
+#: main.py:768
+msgid "Bunker {bunker} is not active."
+msgstr ""
+
+#: main.py:774 main.py:788
+msgid "Bunker {bunker} is active.\n"
+msgstr ""
+
+#: main.py:781
+msgid "Bunker {bunker} does not exist."
+msgstr ""
+
+#: main.py:786
+msgid "Following Bunkers are active.\n"
+msgstr ""
+
+#: main.py:795
+msgid "No active bunkers found."
+msgstr ""
+
