@@ -1,33 +1,23 @@
-# Translations template for Distutils.
-# Copyright (C) 2024 ORGANIZATION
-# This file is distributed under the same license as the Distutils project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2024.
+# German translations for scum_bot.
+# Copyright (C) 2024 liepert.dev
+# This file is distributed under the same license as the scum_bot project.
+# Thorsten Liepert thorsten@liepert.dev, 2024.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Distutils 1.0\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2024-11-12 11:29+0100\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"Project-Id-Version: scum_bot 1.0\n"
+"Report-Msgid-Bugs-To: thorsten@liepert.dev\n"
+"POT-Creation-Date: 2024-11-12 16:49+0100\n"
+"PO-Revision-Date: 2024-11-12 16:45+0100\n"
+"Last-Translator: Thorsten Liepert thorsten@liepert.dev\n"
+"Language: de\n"
+"Language-Team: de <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.16.0\n"
-
-#: main.py:89
-msgid "{user} is connected to the following guild:\n"
-msgstr "{user} ist mit folgender Guild verbunden:\n"
-
-#: main.py:90
-msgid "{name}(id: {id})\n"
-msgstr "{name}(id: {id})\n"
-
-#: main.py:91
-msgid "Starting log parser."
-msgstr "Starte log parser."
 
 #: main.py:223
 msgid "Player: {name}, logged in "
@@ -37,10 +27,9 @@ msgstr "Spieler {name} hat sich eingeloggt "
 msgid "Player: {name}, logged out "
 msgstr "Spieler {name} hat sich ausgeloggt"
 
-
 #: main.py:247
 msgid "bad boy"
-msgstr ""
+msgstr "böser Bube"
 
 #: main.py:248
 msgid "savage"
@@ -166,7 +155,7 @@ msgstr ""
 msgid "You do not have permission to execute this command."
 msgstr ""
 
-#: main.py:729 main.py:759 main.py:807
+#: main.py:729 main.py:759 main.py:807 main.py:855
 msgid "You do not have permission to invoke this command."
 msgstr ""
 
@@ -205,4 +194,99 @@ msgstr ""
 #: main.py:795
 msgid "No active bunkers found."
 msgstr ""
+
+#: main.py:817 main.py:864
+msgid "Error: Player {player} does not exists in Database"
+msgstr ""
+
+#: main.py:820 main.py:867
+msgid "Multiple players with Name {player} found.\n"
+msgstr ""
+
+#: main.py:826 main.py:832
+msgid "{player} is currently {status}"
+msgstr ""
+
+#: main.py:836
+msgid "Follwoing Players are online:\n"
+msgstr ""
+
+#: main.py:841
+msgid "{name} is online since {login}\n"
+msgstr ""
+
+#: main.py:843
+msgid "No players are online at the moment."
+msgstr ""
+
+#: main.py:875 main.py:885
+msgid "now"
+msgstr ""
+
+#: main.py:876 main.py:887
+msgid "Player: {player} is currently {state} and was last seen {lastseen}."
+msgstr ""
+
+#: main.py:897
+msgid "Hi, {author}. My Name is {user}.\n"
+msgstr ""
+
+#: main.py:898
+msgid "You can call me with following commands:\n"
+msgstr ""
+
+#: main.py:902
+msgid "!online <player name> - I will tell you if the"
+msgstr ""
+
+#: main.py:903
+msgid "player with <name> is online on the SCUM server\n"
+msgstr ""
+
+#: main.py:907
+msgid "!lastseen <player name> - I will tell you when I have seen <playername>"
+msgstr ""
+
+#: main.py:908
+msgid "on the SCUM Server\n"
+msgstr ""
+
+#: main.py:912
+msgid "!bunkers <bunker name> - I will tell you if the <bunker name> is active.\n"
+msgstr ""
+
+#: main.py:913
+msgid "But the <bunker name> is optional. Without I unveil the secret and give"
+msgstr ""
+
+#: main.py:914
+msgid " you all active bunkers."
+msgstr ""
+
+#: main.py:918
+msgid ""
+"I will also report bunker openening, kills and players joining to and "
+"disconnecting "
+msgstr ""
+
+#: main.py:919
+msgid "from the SCUM Server."
+msgstr ""
+
+#: main.py:936
+msgid "You do not have the correct role for this command."
+msgstr ""
+
+#: main.py:938
+msgid "'{error}' is a required argument."
+msgstr ""
+
+#~ msgid "{user} is connected to the following guild:\n"
+#~ msgstr "{user} ist mit folgender Guild verbunden:\n"
+
+#~ msgid "{name}(id: {id})\n"
+#~ msgstr "{name}(id: {id})\n"
+
+#~ msgid "Starting log parser."
+#~ msgstr "Starte log parser."
 

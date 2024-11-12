@@ -85,11 +85,11 @@ async def on_ready():
             f'{guild.name}(id: {guild.id})\n'
             'Starting log parser.'
         )
-        logging.info(
-           _('{user} is connected to the following guild:\n').format(user=client.user) +
-           _('{name}(id: {id})\n').format(name=guild.name, id=guild.id) +
-           _('Starting log parser.')
-        )
+        # logging.info(
+        #    _('{user} is connected to the following guild:\n').format(user=client.user) +
+        #    _('{name}(id: {id})\n').format(name=guild.name, id=guild.id) +
+        #    _('Starting log parser.')
+        # )
     #call database manager to initialize db
     db = ScumLogDataManager(config.database_file)
 
@@ -814,33 +814,33 @@ async def player_online(ctx, player: str = None):
         player_status = db.get_player_status(player)
 
         if len(player_status) == 0:
-            message = f"Error: Player {player} does not exists in Database"
+            message = _("Error: Player {player} does not exists in Database").format(player=player)
         else:
             if len(player_status) > 1:
-                message = f"Multiple players with Name {player} found.\n"
+                message = _("Multiple players with Name {player} found.\n").format(player=player)
                 for p in player_status:
                     if p["status"] == 0:
                         state = "offline"
                     else:
                         state = "online"
-                    message += f"{player} is currently {p['status']}"
+                    message += _("{player} is currently {status}").format(player=player, status=state)
             else:
                 if player_status[0]["status"] == 0:
                     state = "offline"
                 else:
                     state = "online"
-                message = f"Player: {player} is currently {state}."
+                message += _("{player} is currently {status}").format(player=player, status=state)
     else:
         player_status = db.get_player_status()
         if len(player_status) > 0:
-            message = "Follwoing Players are online:\n"
+            message = _("Follwoing Players are online:\n")
             for p in player_status:
                 if p["status"] == 1:
                     login = datetime.fromtimestamp(p['login_timestamp'],
                                                     local_timezone).strftime('%d.%m.%Y %H:%M:%S')
-                    message += f"{p['name']} is online since {login}\n"
+                    message += _("{name} is online since {login}\n").format(name=p['name'],login=login)
         else:
-            message = "No players are online at the moment."
+            message = _("No players are online at the moment.")
 
     await _reply(ctx, message)
     db.close()
@@ -852,7 +852,7 @@ async def player_lastseen(ctx, player: str):
 
     if not _check_user_bot_role(ctx.author.name, "user") and not \
         _check_guild_roles(config.user_role):
-        await ctx.reply("You do not have permission to invoke this command.")
+        await ctx.reply(_("You do not have permission to invoke this command."))
         return
 
     local_timezone = ZoneInfo('Europe/Berlin')
@@ -861,29 +861,31 @@ async def player_lastseen(ctx, player: str):
     player_status = db.get_player_status(player)
 
     if len(player_status) == 0:
-        message = f"Error: Player {player} does not exists in Database"
+        message = _("Error: Player {player} does not exists in Database").format(player=player)
     else:
         if len(player_status) > 1:
-            message = f"Multiple players with Name {player} found.\n"
+            message = _("Multiple players with Name {player} found.\n").format(player=player)
             for p in player_status:
                 if p["status"] == 0:
                     state = "offline"
-                    lasstseen = datetime.fromtimestamp(p["logout_timestamp"],
+                    lastseen = datetime.fromtimestamp(p["logout_timestamp"],
                                                        local_timezone).strftime('%d.%m.%Y %H:%M:%S')
                 else:
                     state = "online"
-                    lasstseen = "now"
-                message += f"Player: {player} is currently {state} and was last seen {lasstseen}."
+                    lastseen = _("now")
+                message += _("Player: {player} is currently {state} and was last seen {lastseen}.") \
+                           .format(player=player, state=state, lastseen=lastseen)
         else:
             if player_status[0]["status"] == 0:
                 state = "offline"
-                lasstseen = datetime.fromtimestamp(player_status[0]["logout_timestamp"],
+                lastseen = datetime.fromtimestamp(player_status[0]["logout_timestamp"],
                                                    local_timezone).strftime('%Y-%m-%d %H:%M:%S')
             else:
                 state = "online"
-                lasstseen = "now"
+                lastseen = _("now")
 
-            message = f"Player: {player} is currently {state} and was last seen {lasstseen}."
+            message = _("Player: {player} is currently {state} and was last seen {lastseen}.") \
+                      .format(player=player, state=state, lastseen=lastseen)
 
     await _reply(ctx, message)
     db.close()
@@ -892,29 +894,29 @@ async def player_lastseen(ctx, player: str):
 async def bot_help(ctx):
     """Help command"""
 
-    msg_str = f"Hi, {ctx.author}. My Name is {client.user}.\n"
-    msg_str += "You can call me with following commands:\n"
+    msg_str = _("Hi, {author}. My Name is {user}.\n").format(author=ctx.author, user=client.user)
+    msg_str += _("You can call me with following commands:\n")
 
     await _reply(ctx, msg_str)
 
-    msg_str = "!online <player name> - I will tell you if the"
-    msg_str += "player with <name> is online on the SCUM server\n"
+    msg_str = _("!online <player name> - I will tell you if the")
+    msg_str += _("player with <name> is online on the SCUM server\n")
 
     await _reply(ctx, msg_str)
 
-    msg_str = "!lastseen <player name> - I will tell you when I have seen <playername>"
-    msg_str += "on the SCUM Server\n"
+    msg_str = _("!lastseen <player name> - I will tell you when I have seen <playername>")
+    msg_str += _("on the SCUM Server\n")
 
     await _reply(ctx, msg_str)
 
-    msg_str = "!bunkers <bunker name> - I will tell you if the <bunker name> is active.\n"
-    msg_str += "But the <bunker name> is optional. Without I unveil the secret and give"
-    msg_str += " you all active bunkers."
+    msg_str = _("!bunkers <bunker name> - I will tell you if the <bunker name> is active.\n")
+    msg_str += _("But the <bunker name> is optional. Without I unveil the secret and give")
+    msg_str += _(" you all active bunkers.")
 
     await _reply(ctx, msg_str)
 
-    msg_str = "I will also report bunker openening, kills and players joining to and disconnecting "
-    msg_str += "from the SCUM Server."
+    msg_str = _("I will also report bunker openening, kills and players joining to and disconnecting ")
+    msg_str += _("from the SCUM Server.")
 
     await _reply(ctx, msg_str)
 
@@ -931,9 +933,9 @@ async def roll(ctx, number_of_dice: int, number_of_sides: int):
 async def on_command_error(ctx, error):
     """Is called when commands have errors"""
     if isinstance(error, commands.errors.CheckFailure):
-        await ctx.send('You do not have the correct role for this command.')
+        await ctx.send(_('You do not have the correct role for this command.'))
     elif isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send(f"'{error.param.name}' is a required argument.")
+        await ctx.send(_("'{error}' is a required argument.").format(error=error.param.name))
     else:
         # All unhandled errors will print their original traceback
         logging.error(f'Ignoring exception in command {ctx.command}:')
