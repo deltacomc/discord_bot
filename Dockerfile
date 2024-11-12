@@ -6,17 +6,18 @@
 ###################################
 FROM python:3.12-alpine AS build
 RUN mkdir -p /app/locale/de/LC_MESSAGES
+
 COPY locale/de/LC_MESSAGES/messages.po /app/locale/de/LC_MESSAGES
 
-WORKDIR /app/locale/de/LC_MESSAGES
 RUN apk add --update --no-cache icu-dev gettext gettext-dev
 
+WORKDIR /app/locale/de/LC_MESSAGES
 RUN msgfmt messages.po
 
 FROM python:3.12-alpine
 
-RUN apk add --update --no-cache gettext 
-RUN mkdir -p /app/locale
+RUN apk add --update --no-cache gettext && \
+    mkdir -p /app/locale
 
 COPY requirements.txt main.py /app/
 COPY modules/ /app/modules
