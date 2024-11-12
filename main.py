@@ -11,6 +11,7 @@ import os
 import sys
 import random
 import traceback
+import gettext
 
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -29,6 +30,12 @@ from modules.sftploader import ScumSFTPLogParser
 from modules.output import Output
 from modules.configmanager import ConfigManager
 # pylint: enable=wrong-import-position
+
+
+localedir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'locale')
+translate = gettext.translation('messages', localedir, fallback=True, languages=['de'])
+translate.install()
+_ = translate.gettext
 
 load_dotenv()
 LOG_CHECK_INTERVAL = os.getenv("LOG_CHECK_INTERVAL")
@@ -76,7 +83,12 @@ async def on_ready():
         logging.info(
             f'{client.user} is connected to the following guild:\n'
             f'{guild.name}(id: {guild.id})\n'
-            f'Starting log parser.'
+            'Starting log parser.'
+        )
+        logging.info(
+           _('{user} is connected to the following guild:\n').format(user=client.user) +
+           _('{name}(id: {id})\n').format(name=guild.name, id=guild.id) +
+           _('Starting log parser.')
         )
     #call database manager to initialize db
     db = ScumLogDataManager(config.database_file)
