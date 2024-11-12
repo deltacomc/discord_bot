@@ -315,7 +315,7 @@ async def handle_admin_log(msgs, file, dbconnection):
             for mm in str.split(m,"\n"):
                 msg = fp.parse(mm)
                 if msg and dbconnection.check_message_send(msg["hash"]):
-                    logging.debug(f"Admin: {msg['name']} has called a type {msg['type']} command.")
+                    logging.debug(f"Admin: {msg['name']}: {msg['type']} - {msg['action']}")
                     dbconnection.store_message_send(msg["hash"])
                     dbconnection.update_admin_audit(msg)
                     if config.config["publish_admin_log"]:
