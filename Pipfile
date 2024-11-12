@@ -11,6 +11,7 @@ name = "pypi"
 "tzlocal" = "*"
 
 [dev-packages]
+"Babel" = "*"
 
 [requires]
 python_version = "3.12"
