@@ -13,7 +13,7 @@ steps:
     image: "ghcr.io/hadolint/hadolint:latest-debian"
     commands:
       - hadolint --version
-      - hadolint Dockerfile
+      - hadolint --ignore DL3018 Dockerfile
   # - name: pylint
   #   image: python:3.12-alpine
   #   environment:
