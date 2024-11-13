@@ -261,33 +261,32 @@ msgstr "Argument <bunker name> ist optional. Wenn Du den Namen weglässt, schaue
 
 #: main.py:914
 msgid " you all active bunkers."
-msgstr "alle aktiven Bunker."
+msgstr "Dir alle aktiven Bunker."
 
 #: main.py:918
 msgid ""
 "I will also report bunker openening, kills and players joining to and "
 "disconnecting "
-msgstr ""
-"disconnecting "
+msgstr "Ausserdem reporte ich Bunker AKtivierungen, Kills und Player An- und "
+"Abmeldungen "
 
 #: main.py:919
 msgid "from the SCUM Server."
-msgstr ""
+msgstr "von unserem SCUM-Server."
 
 #: main.py:936
 msgid "You do not have the correct role for this command."
-msgstr ""
+msgstr "Du hast hierfür nicht die richtige Rolle für diesen Befehl!"
 
 #: main.py:938
 msgid "'{error}' is a required argument."
-msgstr ""
+msgstr "'{error}' ist ein benötigtes Argument!"
 
 #~ msgid "{user} is connected to the following guild:\n"
-#~ msgstr "{user} ist mit folgender Guild verbunden:\n"
+#~ msgstr "{user} ist mit folgendem Discord-Server verbunden:\n"
 
 #~ msgid "{name}(id: {id})\n"
 #~ msgstr "{name}(id: {id})\n"
 
 #~ msgid "Starting log parser."
 #~ msgstr "Starte log parser."
-
