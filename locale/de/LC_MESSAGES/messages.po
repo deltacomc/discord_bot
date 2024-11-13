@@ -183,7 +183,7 @@ msgstr "Bunker ist derzeit nicht aktiv!"
 
 #: main.py:781 main.py:795
 msgid "Bunker {bunker} is active.\n"
-msgstr "Bunker ist derzeit aktiv!"
+msgstr "Bunker ist derzeit aktiv!\n"
 
 #: main.py:788
 msgid "Bunker {bunker} does not exist."
@@ -233,7 +233,6 @@ msgstr "Spieler {player} ist derzeit {state} und wurde zuletzt gesehen {lastseen
 msgid "Hi, {author}. My Name is {user}.\n"
 msgstr ""
 "Servusla {author}! Mein Name ist {user}!\n"
-" "
 
 #: main.py:907
 msgid "You can call me with following commands:\n"
