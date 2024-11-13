@@ -37,139 +37,139 @@ msgstr ""
 
 #: main.py:249
 msgid "bandit"
-msgstr ""
+msgstr "Bandit"
 
 #: main.py:250
 msgid "hero"
-msgstr ""
+msgstr "Held"
 
 #: main.py:251
 msgid "murderer"
-msgstr ""
+msgstr "Mörder"
 
 #: main.py:265
 msgid "Player {killer} "
-msgstr ""
+msgstr "Spieler {killer} "
 
 #: main.py:266
 msgid "was a {playerinsult} "
-msgstr ""
+msgstr "war ein {playerinsult} "
 
 #: main.py:267
 msgid "and killed {victim} "
-msgstr ""
+msgstr "und tötete {victim} "
 
 #: main.py:268
 msgid "with a {weapon}."
-msgstr ""
+msgstr "mit {weapon}."
 
 #: main.py:290
 msgid "Bunker {name} was activated. "
-msgstr ""
+msgstr "Bunker {name} öffnete seine Pforten. "
 
 #: main.py:306
 msgid "Bunker coordinates unkown, "
-msgstr ""
+msgstr "Bunker Koordinaten sind nicht bekannt, "
 
 #: main.py:307
 msgid "it wasnt't discovered previously."
-msgstr ""
+msgstr "wurde vorher noch nicht entdeckt."
 
 #: main.py:341
 msgid "{name} invoked "
-msgstr ""
+msgstr "{name} startete "
 
 #: main.py:487
 msgid "Current configuration"
-msgstr ""
+msgstr "Aktuelle Konfiguration"
 
 #: main.py:493
 msgid "Members stored in DB."
-msgstr ""
+msgstr "Mitglieder in DB gespeichert."
 
 #: main.py:501
 msgid "Current Environment"
-msgstr ""
+msgstr "Derzeitige Umgebung"
 
 #: main.py:507
 msgid "Guild members:"
-msgstr ""
+msgstr "Discord Mitglieder"
 
 #: main.py:520
 msgid "You don't have permission to invoke this command."
-msgstr ""
+msgstr "Du hast nicht die erforderlichen Rechte, dieses Kommando aufzurufen!"
 
 #: main.py:525 main.py:535
 msgid "Current members in database:\n"
-msgstr ""
+msgstr "Derzeitig in der DB gespeicherte(n) Spieler:\n"
 
 #: main.py:533
 msgid "No members stored in Database"
-msgstr ""
+msgstr "Keine Spieler in der DB gespeichert"
 
 #: main.py:547
 msgid "Member {name} given bot role {role}"
-msgstr ""
+msgstr "Mitglied {name} wurde folgende Bot-Rolle {role} gegeben."
 
 #: main.py:551
 msgid "Member {name} does not exist on Server."
-msgstr ""
+msgstr "Es existiert kein Spieler mit dem Namen {name} auf diesem Server."
 
 #: main.py:553
 msgid "Member {name} not in database. Can't create member via DM."
-msgstr ""
+msgstr "Spieler {name} nicht in der DB enthalten. Kann nicht via DM angelegt werden."
 
 #: main.py:556
 msgid "Member {name} already has bot role {role}"
-msgstr ""
+msgstr "Kumpel, Mitglied {name} hat Bot-Rolle {role} bereits!"
 
 #: main.py:558
 msgid "Member {args[0]} given bot role {args[1]}"
-msgstr ""
+msgstr "Mitglied {args[0]} hat die Bot-Rolle {args[1]} erhalten."
 
 #: main.py:563
 msgid "Too many arguments for command 'member'"
-msgstr ""
+msgstr "Alter!! Das sind viel zu viele Eingaben!"
 
 #: main.py:568
 msgid "No members in database!"
-msgstr ""
+msgstr "Keine Einträge in der DB!"
 
 #: main.py:600
 msgid "Command not supported!"
-msgstr ""
+msgstr "Dieses Kommando wird hier nicht unterstützt!"
 
 #: main.py:618
 msgid "No entries in audit!"
-msgstr ""
+msgstr "Keine Einträge im Audit-Log!"
 
 #: main.py:632 main.py:639
 msgid "You have no permission to execute this command!"
-msgstr ""
+msgstr "Du hast nicht das Recht, dieses Kommando auszuführen!"
 
 #: main.py:653 main.py:662 main.py:671 main.py:680 main.py:689
 msgid "Missing arguments."
-msgstr ""
+msgstr "Hier fehlt was!"
 
 #: main.py:712 main.py:719
 msgid "You do not have permission to execute this command."
-msgstr ""
+msgstr "Du hast nicht das Recht, dieses Kommando auszuführen!"
 
 #: main.py:729 main.py:759 main.py:807 main.py:855
 msgid "You do not have permission to invoke this command."
-msgstr ""
+msgstr "Du hast nicht das Recht, dieses Kommando aufzurufen!"
 
 #: main.py:738
 msgid "Player {player} lives on server for {lifetime}."
-msgstr ""
+msgstr "Spieler {player} treibt hier schon seit {lifetime} sein Unwesen."
 
 #: main.py:740
 msgid "Player {player} has no life on this server."
-msgstr ""
+msgstr "Hä? {player} gibts hier nicht!"
 
 #: main.py:744
 msgid "Following players have a liftime on this server:\n"
-msgstr ""
+msgstr "Folgende Spieler treiben sich hier rum:\n"
 
 #: main.py:747
 msgid "{name} lives for {lifetime} on this server.\n"
