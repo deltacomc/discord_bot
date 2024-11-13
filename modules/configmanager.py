@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from modules.datamanager import ScumLogDataManager
 
 class ConfigManager():
+    """Managing configuration"""
 
     token: str
     guild: str
@@ -29,8 +30,10 @@ class ConfigManager():
     super_admin_role: str
     super_admin_user: str
     user_role: str
+    language: str
 
     config: dict
+
 
     _DEFAULT_CONFIG = {
         "reply": "same_channel",
@@ -87,6 +90,8 @@ class ConfigManager():
         self.help_command = os.getenv("BOT_HELP_COMMAND")
         self.experimental = os.getenv("EXPERIMENTAL_ENABLE")
 
+        self.language = os.getenv("BOT_LANGUAGE")
+
         if os.getenv("BOT_USER_ADMIN_ROLE") is not None:
             self.admin_role = os.getenv("BOT_USER_ADMIN_ROLE")
         elif os.getenv("BOT_ADMIN_ROLE") is not None:
@@ -127,6 +132,9 @@ class ConfigManager():
 
         if not self.super_admin_user:
             self.super_admin_user = "None"
+
+        if not self.language:
+            self.language = "en"
 
         self._load_config(self.database_file)
 

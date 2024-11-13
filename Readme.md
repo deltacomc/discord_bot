@@ -55,6 +55,8 @@ BOT_SUPER_ADMIN_USER= # Super admin who can invoke audit command via DM
 
 EXPERIMENTAL_ENABLE= # Enable experimental and debug features (default: disabled)
                      # Valid value to enable => 1
+
+BOT_LANGUAGE=en # set languge bot should use for chat messages currently supported: en, de
 ```
 
 ## Build and run docker

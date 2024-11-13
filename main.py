@@ -31,12 +31,6 @@ from modules.output import Output
 from modules.configmanager import ConfigManager
 # pylint: enable=wrong-import-position
 
-
-localedir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'locale')
-translate = gettext.translation('messages', localedir, fallback=True, languages=['de'])
-translate.install()
-_ = translate.gettext
-
 load_dotenv()
 LOG_CHECK_INTERVAL = os.getenv("LOG_CHECK_INTERVAL")
 
@@ -66,7 +60,6 @@ client = commands.Bot(command_prefix="!",intents=intents)
 lp: None
 
 logging = Output()
-config = None
 
 @client.event
 async def on_ready():
@@ -94,9 +87,10 @@ async def on_ready():
     db = ScumLogDataManager(config.database_file)
 
     # Open SFTP connection to the game server
-    lp = ScumSFTPLogParser(server=config.sftp_server, port=config.sftp_port, passwd=config.sftp_password,
-                           user=config.sftp_user, logdirectoy=config.log_directory,
-                           database=config.database_file, debug_callback=None)
+    lp = ScumSFTPLogParser(server=config.sftp_server, port=config.sftp_port,
+                           passwd=config.sftp_password, user=config.sftp_user,
+                           logdirectoy=config.log_directory, database=config.database_file,
+                           debug_callback=None)
 
     # Inital load of guild members
     await load_guild_members(db)
@@ -200,6 +194,16 @@ def _check_user_bot_role(name: str, bot_role: str, super_admin: bool = False):
 
     return user_ok
 
+def _get_guild_member_roles(member_name: str) -> list:
+    roles= []
+    for guild in client.guilds:
+        if config.guild in (guild.name, str(guild.id)):
+            for member in guild.members:
+                if member.name == member_name:
+                    roles = member.roles
+
+    return roles
+
 async def send_debug_message(message):
     """Function will send debug messages"""
     channel = client.get_channel(int(config.debug_channel))
@@ -219,16 +223,16 @@ async def handle_login(msgs, file, dbconnection):
                         player_data.append({'drone': False})
                     if not msg['drone'] and not player_data[0]['drone']:
                     # pylint: disable=line-too-long
-                        if msg['state'] == "in": 
+                        if msg['state'] == "in":
                             log_msg = _("Player: {name}, logged in ").format(name=msg['username'])
-                        else: 
+                        else:
                             log_msg = _("Player: {name}, logged out ").format(name=msg['username'])
                         msg_str = log_msg
                         msg_str += f"@ [X={msg['coordinates']['x']} "
                         msg_str += f"Y={msg['coordinates']['y']} Z={msg['coordinates']['z']}]"
                         msg_str += f"(https://scum-map.com/en/map/place/{msg['coordinates']['x']}"
                         msg_str += f",{msg['coordinates']['y']},3)"
-                        
+
                         if config.config["publish_login"] and \
                             (datetime.now().timestamp() - _get_timestamp(msg['timestamp']) < 600):
                             await channel.send(msg_str)
@@ -262,11 +266,12 @@ async def handle_kills(msgs, file, dbconnection):
                         weapon = WEAPON_LOOKUP[[msg["event"]["Weapon"]]]
                     else:
                         weapon = msg["event"]["Weapon"]
+                    # pylint: disable=line-too-long
                     msg_str = _("Player {killer} ").format(killer=msg['event']['Killer']['ProfileName'])
                     msg_str += _("was a {playerinsult} ").format(playerinsult=player_insult)
                     msg_str += _("and killed {victim} ").format(victim=msg['event']['Victim']['ProfileName'])
                     msg_str += _("with a {weapon}.").format(weapon=weapon)
-
+                    # pylint: enable=line-too-long
                     if config.config["publish_kills"]:
                         await channel.send(msg_str)
                     dbconnection.store_message_send(msg["hash"])
@@ -539,6 +544,7 @@ async def command_member(ctx, *args):
 
     elif len(args) == 2:
         # set bot_role of memeber
+        # pylint: disable=line-too-long
         member = db.get_guild_member(args[0])
         if len(member) < 1:
             if ctx.guild:
@@ -566,7 +572,7 @@ async def command_member(ctx, *args):
         await _reply_author(ctx, msg_str)
     else:
         await _reply_author(ctx, _("No members in database!"))
-    # pylint: enable=consider-using-dict-items
+    # pylint: enable=consider-using-dict-items, line-too-long
 
 async def handle_command_audit(ctx, args):
     """ handle command audit"""
@@ -723,9 +729,9 @@ async def command_config(ctx, *args):
 async def command_lifetime(ctx, player: str = None):
     """Command to check server liftime of players"""
     msg_str = None
-
+    # pylint: disable=line-too-long
     if not _check_user_bot_role(ctx.author.name, "user") and not \
-        _check_guild_roles(config.user_role):
+        _check_guild_roles(_get_guild_member_roles(ctx.author.name), config.user_role):
         await ctx.reply(_("You do not have permission to invoke this command."))
         return
 
@@ -748,6 +754,7 @@ async def command_lifetime(ctx, player: str = None):
 
     await _reply(ctx, msg_str)
     db.close()
+    # pylint: enable=line-too-long
 
 @client.command(name='bunkers')
 async def command_bunkers(ctx, bunker: str = None):
@@ -755,7 +762,7 @@ async def command_bunkers(ctx, bunker: str = None):
     msg_str = None
 
     if not _check_user_bot_role(ctx.author.name, "user") and not \
-        _check_guild_roles(config.user_role):
+        _check_guild_roles(_get_guild_member_roles(ctx.author.name), config.user_role):
         await ctx.reply(_("You do not have permission to invoke this command."))
         return
 
@@ -801,9 +808,9 @@ async def command_bunkers(ctx, bunker: str = None):
 async def player_online(ctx, player: str = None):
     """Command to check if player is online"""
     message = ""
-
+    # pylint: disable=line-too-long
     if not _check_user_bot_role(ctx.author.name, "user") and not \
-        _check_guild_roles(config.user_role):
+        _check_guild_roles(_get_guild_member_roles(ctx.author.name), config.user_role):
         await ctx.reply(_("You do not have permission to invoke this command."))
         return
 
@@ -844,14 +851,16 @@ async def player_online(ctx, player: str = None):
 
     await _reply(ctx, message)
     db.close()
+    # pylint: enable=line-too-long
 
+# pylint: disable=line-too-long
 @client.command(name='lastseen')
 async def player_lastseen(ctx, player: str):
     """Function to check last seen of a player"""
     message = ""
 
     if not _check_user_bot_role(ctx.author.name, "user") and not \
-        _check_guild_roles(config.user_role):
+        _check_guild_roles(_get_guild_member_roles(ctx.author.name), config.user_role):
         await ctx.reply(_("You do not have permission to invoke this command."))
         return
 
@@ -919,6 +928,7 @@ async def bot_help(ctx):
     msg_str += _("from the SCUM Server.")
 
     await _reply(ctx, msg_str)
+    # pylint: enable=line-too-long
 
 @client.command(name='roll_dice', help='Simulates rolling dice.')
 async def roll(ctx, number_of_dice: int, number_of_sides: int):
@@ -943,4 +953,10 @@ async def on_command_error(ctx, error):
 
 ## Start the Program
 config = ConfigManager()
+
+localedir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'locale')
+translate = gettext.translation('messages', localedir, fallback=True, languages=[config.language])
+translate.install()
+_ = translate.gettext
+
 client.run(config.token)
