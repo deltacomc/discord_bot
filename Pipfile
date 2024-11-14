@@ -12,6 +12,7 @@ name = "pypi"
 
 [dev-packages]
 "Babel" = "*"
+"setuptools" = "*"
 
 [requires]
 python_version = "3.12"

@@ -5,3 +5,4 @@ pytest-cov
 pytest-pylint
 pytest-asyncio
 Babel
+setuptools
