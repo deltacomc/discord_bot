@@ -236,47 +236,48 @@ msgstr "Puedes llamarme con los siguientes comandos:\n"
 
 #: main.py:902
 msgid "!online <player name> - I will tell you if the"
-msgstr ""
+msgstr "!online <nombre del jugador> - Te diré si el"
 
 #: main.py:903
 msgid "player with <name> is online on the SCUM server\n"
-msgstr ""
+msgstr "jugador con <nombre> está en línea en el servidor SCUM\n"
 
 #: main.py:907
 msgid "!lastseen <player name> - I will tell you when I have seen <playername>"
-msgstr ""
+msgstr "!lastseen <nombre del jugador> - Te diré cuándo he visto a <nombre del jugador>"
 
 #: main.py:908
 msgid "on the SCUM Server\n"
-msgstr ""
+msgstr "en el servidor SCUM\n"
 
 #: main.py:912
 msgid "!bunkers <bunker name> - I will tell you if the <bunker name> is active.\n"
-msgstr ""
+msgstr "!bunkers <nombre del bunker> - Te diré si el <nombre del bunker> está activo.\n"
 
 #: main.py:913
 msgid "But the <bunker name> is optional. Without I unveil the secret and give"
-msgstr ""
+msgstr "Pero el <nombre del bunker> es opcional. Sin él, revelo el secreto y doy"
 
 #: main.py:914
 msgid " you all active bunkers."
-msgstr ""
+msgstr " todos los bunkers activos."
 
 #: main.py:918
 msgid ""
 "I will also report bunker openening, kills and players joining to and "
 "disconnecting "
 msgstr ""
+"También informaré sobre la apertura de bunkers, asesinatos y jugadores que se "
+"conectan y desconectan"
 
 #: main.py:919
 msgid "from the SCUM Server."
-msgstr ""
+msgstr "del servidor SCUM."
 
 #: main.py:936
 msgid "You do not have the correct role for this command."
-msgstr ""
+msgstr "No tienes el rol correcto para este comando."
 
 #: main.py:938
 msgid "'{error}' is a required argument."
-msgstr ""
-
+msgstr "'{error}' es un argumento requerido."
