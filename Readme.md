@@ -16,7 +16,7 @@ preliminary readme
         -> publish_kills: 0 = disable, 1 = enable. When enabled will report kills to SCUM_LOG_FEED_CHANNEL
         -> publish_admin_log: 0 = disable, 1 = enable. When enabled Admin action will be published in SCUM_LOG_FEED_CHANNEL
       - BOT_ADMIN_USER can contact the bot in DM to execute config command
-    * !audit <age> - Audit Admin log
+    * !audit age <age> - Audit Admin log
        -> <age> can be in days or month (e.g. !audit 14d, !audit 3m)
        -> Can only be called by users with role CONFIG_SUPER_ADMIN_ROLE
        -> Can be used via DM by user BOT_SUPER_ADMIN_USER
