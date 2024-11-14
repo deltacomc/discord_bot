@@ -1,0 +1,282 @@
+# French translations for scum_bot.
+# Copyright (C) 2024 ORGANIZATION
+# This file is distributed under the same license as the scum_bot project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2024.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: scum_bot 1.0\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2024-11-12 16:49+0100\n"
+"PO-Revision-Date: 2024-11-14 11:01+0100\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.16.0\n"
+
+#: main.py:223
+msgid "Player: {name}, logged in "
+msgstr ""
+
+#: main.py:225
+msgid "Player: {name}, logged out "
+msgstr ""
+
+#: main.py:247
+msgid "bad boy"
+msgstr ""
+
+#: main.py:248
+msgid "savage"
+msgstr ""
+
+#: main.py:249
+msgid "bandit"
+msgstr ""
+
+#: main.py:250
+msgid "hero"
+msgstr ""
+
+#: main.py:251
+msgid "murderer"
+msgstr ""
+
+#: main.py:265
+msgid "Player {killer} "
+msgstr ""
+
+#: main.py:266
+msgid "was a {playerinsult} "
+msgstr ""
+
+#: main.py:267
+msgid "and killed {victim} "
+msgstr ""
+
+#: main.py:268
+msgid "with a {weapon}."
+msgstr ""
+
+#: main.py:290
+msgid "Bunker {name} was activated. "
+msgstr ""
+
+#: main.py:306
+msgid "Bunker coordinates unkown, "
+msgstr ""
+
+#: main.py:307
+msgid "it wasnt't discovered previously."
+msgstr ""
+
+#: main.py:341
+msgid "{name} invoked "
+msgstr ""
+
+#: main.py:487
+msgid "Current configuration"
+msgstr ""
+
+#: main.py:493
+msgid "Members stored in DB."
+msgstr ""
+
+#: main.py:501
+msgid "Current Environment"
+msgstr ""
+
+#: main.py:507
+msgid "Guild members:"
+msgstr ""
+
+#: main.py:520
+msgid "You don't have permission to invoke this command."
+msgstr ""
+
+#: main.py:525 main.py:535
+msgid "Current members in database:\n"
+msgstr ""
+
+#: main.py:533
+msgid "No members stored in Database"
+msgstr ""
+
+#: main.py:547
+msgid "Member {name} given bot role {role}"
+msgstr ""
+
+#: main.py:551
+msgid "Member {name} does not exist on Server."
+msgstr ""
+
+#: main.py:553
+msgid "Member {name} not in database. Can't create member via DM."
+msgstr ""
+
+#: main.py:556
+msgid "Member {name} already has bot role {role}"
+msgstr ""
+
+#: main.py:558
+msgid "Member {args[0]} given bot role {args[1]}"
+msgstr ""
+
+#: main.py:563
+msgid "Too many arguments for command 'member'"
+msgstr ""
+
+#: main.py:568
+msgid "No members in database!"
+msgstr ""
+
+#: main.py:600
+msgid "Command not supported!"
+msgstr ""
+
+#: main.py:618
+msgid "No entries in audit!"
+msgstr ""
+
+#: main.py:632 main.py:639
+msgid "You have no permission to execute this command!"
+msgstr ""
+
+#: main.py:653 main.py:662 main.py:671 main.py:680 main.py:689
+msgid "Missing arguments."
+msgstr ""
+
+#: main.py:712 main.py:719
+msgid "You do not have permission to execute this command."
+msgstr ""
+
+#: main.py:729 main.py:759 main.py:807 main.py:855
+msgid "You do not have permission to invoke this command."
+msgstr ""
+
+#: main.py:738
+msgid "Player {player} lives on server for {lifetime}."
+msgstr ""
+
+#: main.py:740
+msgid "Player {player} has no life on this server."
+msgstr ""
+
+#: main.py:744
+msgid "Following players have a liftime on this server:\n"
+msgstr ""
+
+#: main.py:747
+msgid "{name} lives for {lifetime} on this server.\n"
+msgstr ""
+
+#: main.py:768
+msgid "Bunker {bunker} is not active."
+msgstr ""
+
+#: main.py:774 main.py:788
+msgid "Bunker {bunker} is active.\n"
+msgstr ""
+
+#: main.py:781
+msgid "Bunker {bunker} does not exist."
+msgstr ""
+
+#: main.py:786
+msgid "Following Bunkers are active.\n"
+msgstr ""
+
+#: main.py:795
+msgid "No active bunkers found."
+msgstr ""
+
+#: main.py:817 main.py:864
+msgid "Error: Player {player} does not exists in Database"
+msgstr ""
+
+#: main.py:820 main.py:867
+msgid "Multiple players with Name {player} found.\n"
+msgstr ""
+
+#: main.py:826 main.py:832
+msgid "{player} is currently {status}"
+msgstr ""
+
+#: main.py:836
+msgid "Follwoing Players are online:\n"
+msgstr ""
+
+#: main.py:841
+msgid "{name} is online since {login}\n"
+msgstr ""
+
+#: main.py:843
+msgid "No players are online at the moment."
+msgstr ""
+
+#: main.py:875 main.py:885
+msgid "now"
+msgstr ""
+
+#: main.py:876 main.py:887
+msgid "Player: {player} is currently {state} and was last seen {lastseen}."
+msgstr ""
+
+#: main.py:897
+msgid "Hi, {author}. My Name is {user}.\n"
+msgstr ""
+
+#: main.py:898
+msgid "You can call me with following commands:\n"
+msgstr ""
+
+#: main.py:902
+msgid "!online <player name> - I will tell you if the"
+msgstr ""
+
+#: main.py:903
+msgid "player with <name> is online on the SCUM server\n"
+msgstr ""
+
+#: main.py:907
+msgid "!lastseen <player name> - I will tell you when I have seen <playername>"
+msgstr ""
+
+#: main.py:908
+msgid "on the SCUM Server\n"
+msgstr ""
+
+#: main.py:912
+msgid "!bunkers <bunker name> - I will tell you if the <bunker name> is active.\n"
+msgstr ""
+
+#: main.py:913
+msgid "But the <bunker name> is optional. Without I unveil the secret and give"
+msgstr ""
+
+#: main.py:914
+msgid " you all active bunkers."
+msgstr ""
+
+#: main.py:918
+msgid ""
+"I will also report bunker openening, kills and players joining to and "
+"disconnecting "
+msgstr ""
+
+#: main.py:919
+msgid "from the SCUM Server."
+msgstr ""
+
+#: main.py:936
+msgid "You do not have the correct role for this command."
+msgstr ""
+
+#: main.py:938
+msgid "'{error}' is a required argument."
+msgstr ""
+
