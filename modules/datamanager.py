@@ -10,7 +10,7 @@ import sqlite3
 from datetime import datetime
 from modules.output import Output
 
-SCHEMA_VERSION = 108
+SCHEMA_VERSION = 109
 
 class ScumLogDataManager:
     """Manage Database access for bot"""
