@@ -65,7 +65,7 @@ BOT_LANGUAGE=en # set languge bot should use for chat messages currently support
     docker run --name scum_bot -d -v ".env:/app/.env" -v "db.sqlite3:/app/db.sqlite3" scum_bot
 ```
 
-# Build Langugare Catalog
+# Build language catalog
 
 Extract phrases from source code:
 ```bash
