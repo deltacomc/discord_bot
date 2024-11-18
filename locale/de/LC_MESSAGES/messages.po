@@ -235,7 +235,7 @@ msgstr "Ich verfüge über folgenden Befehlssatz:\n"
 
 #: main.py:911
 msgid "!online <player name> - I will tell you if the"
-msgstr "!online <spieler name> - Ich verrate Dir ob"
+msgstr "!online <spieler name> - Ich verrate Dir ob "
 
 #: main.py:912
 msgid "player with <name> is online on the SCUM server\n"
@@ -246,8 +246,8 @@ msgstr ""
 #: main.py:916
 msgid "!lastseen <player name> - I will tell you when I have seen <playername>"
 msgstr ""
-"!lastseen <spieler name> - Hiermit verrate ich Dir, wann ich den Spieler "
-"<spieler name> das letzte Mal"
+"!lastseen <spieler name> - Wann ich Spieler "
+"<spieler name> das letzte Mal "
 
 #: main.py:917
 msgid "on the SCUM Server\n"
@@ -256,8 +256,8 @@ msgstr "auf dem SCUM Server gesehen habe\n"
 #: main.py:921
 msgid "!bunkers <bunker name> - I will tell you if the <bunker name> is active.\n"
 msgstr ""
-"!bunkers <bunker name> - TEC1 hat mir verraten, ob der Bunker <bunker "
-"name> aktiviert ist.\n"
+"!bunkers <bunker name> - Ist Bunker <bunker "
+"name> aktiv\n"
 
 #: main.py:922
 msgid "But the <bunker name> is optional. Without I unveil the secret and give"
@@ -267,14 +267,14 @@ msgstr ""
 
 #: main.py:923
 msgid " you all active bunkers."
-msgstr "Dir alle aktiven Bunker."
+msgstr " Dir alle aktiven Bunker."
 
 #: main.py:927
 msgid ""
 "I will also report bunker openening, kills and players joining to and "
 "disconnecting "
 msgstr ""
-"Ausserdem reporte ich Bunker AKtivierungen, Kills und Player An- und "
+"Ausserdem reporte ich Bunker Aktivierungen, Kills und Player An- und "
 "Abmeldungen "
 
 #: main.py:928
