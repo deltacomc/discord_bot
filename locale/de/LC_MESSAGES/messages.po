@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: scum_bot 1.0\n"
 "Report-Msgid-Bugs-To: thorsten@liepert.dev\n"
-"POT-Creation-Date: 2024-11-13 21:35+0100\n"
+"POT-Creation-Date: 2024-11-18 11:39+0100\n"
 "PO-Revision-Date: 2024-11-12 16:45+0100\n"
 "Last-Translator: Thorsten Liepert thorsten@liepert.dev\n"
 "Language: de\n"
@@ -107,7 +107,7 @@ msgstr "Derzeitig in der DB gespeicherte(n) Spieler:\n"
 msgid "No members stored in Database"
 msgstr "Keine Spieler in der DB gespeichert!"
 
-#: main.py:553
+#: main.py:553 main.py:564
 msgid "Member {name} given bot role {role}"
 msgstr "Mitglied {name} wurde folgende Bot-Rolle {role} gegeben!"
 
@@ -124,10 +124,6 @@ msgstr ""
 #: main.py:562
 msgid "Member {name} already has bot role {role}"
 msgstr "Kumpel, Mitglied {name} hat Bot-Rolle {role} bereits!"
-
-#: main.py:564
-msgid "Member {args[0]} given bot role {args[1]}"
-msgstr "Mitglied {args[0]} hat die Bot-Rolle {args[1]} erhalten!"
 
 #: main.py:569
 msgid "Too many arguments for command 'member'"
@@ -231,8 +227,7 @@ msgstr "Spieler {player} ist derzeit {state} und wurde zuletzt gesehen {lastseen
 
 #: main.py:906
 msgid "Hi, {author}. My Name is {user}.\n"
-msgstr ""
-"Servusla {author}! Mein Name ist {user}!\n"
+msgstr "Servusla {author}! Mein Name ist {user}!\n"
 
 #: main.py:907
 msgid "You can call me with following commands:\n"
@@ -302,4 +297,7 @@ msgstr "'{error}' ist ein benötigtes Argument!"
 
 #~ msgid "Starting log parser."
 #~ msgstr "Starte log parser."
+
+#~ msgid "Member {args[0]} given bot role {args[1]}"
+#~ msgstr "Mitglied {args[0]} hat die Bot-Rolle {args[1]} erhalten!"
 

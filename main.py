@@ -561,7 +561,7 @@ async def command_member(ctx, *args):
             if member[args[0]]["bot_role"] == args[1]:
                 msg_str = _("Member {name} already has bot role {role}").format(name=args[0], role=args[1])
             else:
-                msg_str = _("Member {args[0]} given bot role {args[1]}").format(name=args[0], role=args[1])
+                msg_str = _("Member {name} given bot role {role}").format(name=args[0], role=args[1])
                 db.update_guild_member(member[args[0]]['id'],args[0],
                                        member[args[0]]['guild_role'],args[1])
 
